@@ -76,6 +76,46 @@
 			ㄴ Compiler Driver
 				ㄴ preprocessor, compiler, assembler, linker를 호출하여 컴파일을 진행하는 컴포넌트.
 
+			ㄴ ~~~
+			ㄴ symbol resolution
+				ㄴ 링커는 각각의 심볼 참조를 입력받은 relocatable obj file의 심볼테이블에 있는 딱 하나의 정의와 매핑.
+				ㄴ 동일한 모듈 내에서 정의되고 참조되는 local symbol은 symbol resolution이 간단.
+					ㄴ 컴파일러가 모듈당 각 local symbol이 하나의 정의만을 가지도록 하고,
+						local symbol에 해당하는 local static 변수가 유일한 이름을 가지도록 하기 때문.
+				ㄴ global symbol의 경우,
+					ㄴ 컴파일러는 모듈내에 저으이가 없는 symbol 확인시, 다른 모듈에 정의가 있다 가정.
+						심볼테이블에 해당 심볼에 대한 entry 추가 & 링커가 이를 처리하도록 냅둠.
+					ㄴ 링커는 해당 심볼에 대한 정의를 다른 모듈들 안에서 찾지 못하면 에러 발생.
+					ㄴ ??? 한 심볼이 다른 여러 obj file에서 정의된 경우, 링커는 에러를 발생시키거나 그 중 하나를 선택한다.
+					ㄴ 컴파일러는 각각의 global symbol을 'strong' 또는 'weak' 심볼로서 어셈블러한테 export하면,
+						어셈블러는 이 정보를 해당 relocatable obj file의 심볼테이블에 인코딩.
+						ㄴ 함수, 초기화된 글로벌 변수는 'strong', 초기화되지 않은 글로벌 변수는 'weak'.
+					ㄴ 링커는 글로벌 심볼 정의가 여러개 있는 경우, 다음 규칙에 따라 심볼 결정.
+						ㄴ 'strong' 글로벌 심볼 정의가 여러개인 경우는 허용되지 않음. 에러 발생.
+						ㄴ 'strong' 심볼과 여러 'weak' 심볼이 있는 경우, 'strong' 심볼로 결정.
+						ㄴ 'weak' 심볼만 여러개 있는 경우, 아무거나 선택.
+					ㄴ 선택되지 않은 다른 심볼 정의는 무시되므로, 해당 심볼 사용시 주의 필요. 버그의 소지 있음.
+
+			ㄴ static library 링킹
+				ㄴ 대부분의 컴파일 시스템은 관련있는 object 모듈들을 패키징하여 하나의 파일로 만드는 방식을 지원.
+				ㄴ 이 하나의 파일을 'static library'라고 함.
+				ㄴ static library는 링커에게 input으로 넘길 수 있음.
+				ㄴ executable 파일 생성시, library에서 프로그램이 참조하는 모듈들만 복사.
+				ㄴ ??? ANSI C의 경우, 문자열 조작, i/o 조작, 수학 관련 함수들 등 여러가지 라이브러리가 있고
+					c 프로그램 어디서든 이 standard library를 사용할 수 있다.
+				ㄴ ??? library 없이 컴파일러가 이러한 표준 기능들을 제공할 방법을 고려해보면,
+					ㄴ ??? 컴파일러가 이 표준 함수들의 호출을 인식하고 적절한 코드를 직접 생성시키는 방법. (??? Pascal 처럼?)
+						이러한 방법은 C에선 어렵. 표준 라이브러리가 너무 많아서.
+						또한 표준 기능 변경시마다 컴파일러를 수정해야하고, 컴파일러에 너무 많은 복잡성을 주게됨?
+						어플리케이션 개발자에겐 편리. 어디서든 표준 함수 사용이 가능해서.
+					ㄴ ??? 또다른 방법은, 모든 표준 함수들을 하나의 relocatable object 파일에 넣는 것.
+						ㄴ 표준함수의 구현과 컴파일러의 구현을 분리.
+						ㄴ 이전 방법과 동일하게 어플리케이션 프로그래머는 편함.
+						ㄴ 모든 executable 파일이 동일한 풀버전 표준함수 코드를 가지고 있게됨. (저장공간 낭비)
+						ㄴ 모든 실행중인 프로그램은 이 표준 함수에 대한 코드를 메모리에 올려놓게됨. (메모리 낭비)
+						ㄴ 표준함수에 대한 수정시, 모든 소스코드를 재컴파일해야함.
+					ㄴ
+
 		ㅇ statically typed language vs dynamically typed language<button>더보기</button>
 		<pre>
 			ㅡ statically typed )
@@ -275,6 +315,20 @@
 										ㄴ request를 포함하고 있는 target들에게 라우팅한다.
 										ㄴ target에 대한 상태 체크를 설정할 수 있다. 모든 target에 대해 실행된다.
 
+				</pre>
+
+				ㄴ Google Cloud<button>more</button>
+				<pre>
+					ㄴ
+					ㄴ 무제<button>more</button>
+					<pre>
+						ㄴ compute engine vm이 일반적인 가상머신인듯. aws ec2처럼.
+						ㄴ 무료 사용
+							ㄴ 일정 기간 무료체험판과 신규 가입시 크레딧 제공.
+							ㄴ 일부 기능, 제한된 사용량에 대해 무료 제공 중.
+								ㄴ https://cloud.google.com/free?hl=ko
+
+					</pre>
 				</pre>
 
 			</pre>
@@ -1367,7 +1421,8 @@
 						ㄴ Object도 fucntion으로 정의된 함수의 일종.
 
 					ㅡ 개요)
-						간단하게말하면, 객체에 대해 인스턴스생성시마다 인스턴스를 새로 생성하는게 아니고 원형이되는 프로토타입을 하나 만들어놓고 인스턴스들이 그 프로토타입객체를 참조해서 사용하는 방식.???
+						간단하게말하면, 객체에 대해 인스턴스생성시마다 인스턴스를 새로 생성하는게 아니고 원형이되는 프로토타입을 하나 만들어놓고
+                        인스턴스들이 그 프로토타입객체를 참조해서 사용하는 방식.???
 
 					ㅡ함수가 정의될때 일어나는일)
 						ㄴ 해당함수에 생성자 자격을 부여한다고한다. 이를통해 해당 함수에 대해 new키워드로 객체를 생성할수있다.(생성자 함수)
@@ -1426,6 +1481,54 @@
 						ㄴ toString() : 호출한 객체의 값을 문자열로 반환.
 						ㄴ valueOf() : 모르겟다.
 						ㄴ getter, setter : 모르겟다.
+
+                    ㅡ 무제
+                        ㄴ 프로토타입 체인
+                            ㄴ 객체에서 어떤 속성에 대해 접근할때, 객체는 해당 속성을 자기 자신의 속성, 자신의 프로토타입의 속성, 프로토타입의 프로토타입의 속성을
+                                올라가며 탐색한다.
+                                이 체인의 종단점은 prototype 값이 null인 Object 객체가 된다.
+                            ㄴ 자기자신부터 순서대로 올라가므로, 당연히 자기자신의 속성에서 찾으면 프로토타입을 탐색하지 않는다.
+                                이를 상속의 오버라이드 개념으로 사용할 수 있다.
+                            ㄴ 성능 이슈
+                                ㄴ 속성에 대해 체인 종단까지 탐색하는 과정이 성능에 이슈가 될 수 있음.
+                        ㄴ class, function을 정의 후, 이에 대한 인스턴스, 변수를 만들어도
+                            각각의 그 인스턴스, 변수의 prototype과 정의한 class, function의 prototype은 동일.
+                            ㄴ ex )
+                                class NoName{
+                                    a = 1;
+                                }
+                                var noname = new NoName();
+                                noname.__proto__ === NoName.prototype  // true
+
+                                function aaa(){}
+                                var a1 = new aaa()
+                                a1.__proto__ === aaa.prototype  // true
+                        ㄴ 최상위 prototype은 Object의 prototype인 Object.prototype
+                        ㄴ prototype 관련 객체 생성 방법?
+                            ㄴ js 기본 문법 사용
+                                ㄴ ex )
+                                    var o = {name : "john"}  // 이 형식으로 객체 생성시, o는 Object.prototype을 프로토타입으로 가진다.
+
+                                    var arr = [1, 2, 3]  // 이 형식으로 객체 생성시, arr는 Array.prototype을 프로토타입으로 가진다.
+
+                                    function func(){}  // 이 형식으로 객체 생성시, func는 Function.prototype을 프로토타입으로 가진다.
+                            ㄴ new 연산자 이용
+                                ㄴ ex )
+                                    function NoName(){
+                                        this.a = "hello";
+                                    }
+
+                                    var noname = new NoName();  // noname은 NoName.prototype을 프로토타입으로 가진다.
+                            ㄴ Object.create() 이용
+                                ㄴ ex )
+                                    var a = {name: "hello"}
+                                    var b = Object.create(a)  // b는 a를 프로토타입으로 가진다.
+                                ㄴ 특정 객체를 프로토타입으로 하는 객체를 생성해주는 메소드.
+                            ㄴ class 키워드
+                                ㄴ ~~~
+
+
+
 				</pre>
 				ㅇ 기타 <button>더보기</button>
 				<pre>
@@ -1786,9 +1889,9 @@
 					ㅡ API들은 대부분 이벤트를 활용한다.
 					ㅡ API들은 각자의 추가적인 보안메커니즘을 가진다.
 
-				ㅇ API들 상세 <button>더보기</button>
+				ㅇ Web API들 상세 <button>더보기</button>
 				<pre>
-					ㅡ FormDate <button>더보기</button>
+					ㅡ FormData <button>더보기</button>
 					<pre>
 						ㅡ form태그의 데이터들을 쉽게 전송할 수 잇게 해주는 api
 						ㅡ 간단 사용법 )
@@ -1826,6 +1929,22 @@
 					<pre>
 						ㄴ
 					</pre>
+                    ㅡ Window<button>more</button>
+                    <pre>
+                        ㄴ ~~~
+                        ㄴ instance method
+                            ㄴ ~~~
+                            ㄴ close()
+                                ㄴ 해당 window를 닫는 메소드.
+                                ㄴ 보안상의 이유로 자기 자신을 닫을 수 없다.
+                                    var w = window.open()을 통하여 새로 열은 window만 닫기 가능.
+                                ㄴ tip )
+                                    ㄴ 팝업으로 띄운 창을 js 상에서 닫고 싶으면 window.postMessage()로 부모 window에
+                                        메세지를 보내 닫도록 처리 가능. postMessage() 부분 참고.
+                            ㄴ open()
+                                ㄴ
+
+                    </pre>
 
 				</pre>
 			</pre>
@@ -1982,6 +2101,86 @@
 				ㅇ 기타
 					ㅡ 한계?) AJAX기술은 요청을 하고 응답을 받아올수는 있지만, 서버단에서 하는것처럼 복잡한작업은 이걸이용해서 할수없는듯하다.
 						결국 돌아가는건 브라우저상에서 자바스크립트 안에서 돌아가는것이기때문에. 단순한 데이터 받아서 그거 사용하는정도.
+
+			</pre>
+			클라이언트 저장소 <button>more</button>
+			<pre>
+				ㄴ 브라우저단에서 웹사이트가 사용자의 컴퓨터에 데이터를 저장할 수 있게 해주는 기능들에 대해 알아봄.
+				ㄴ 흔한 사용 케이스 )
+					ㄴ 개인 맞춤 데이터 저장.
+					ㄴ 웹사이트에서의 이전 활동 기억.
+					ㄴ 사이트에서 사용하는 데이터 및 파일 사전 저장. 이를 통해 다운 네트워크량, 속도 개선.
+					ㄴ 오프라인에서 사용 가능.
+				ㄴ 방법 )
+					ㄴ Cookie )
+						ㄴ 가장 초기에 사용하던 방식. 현대엔 이보다 더 쉽고 유용한 방법들 존재.
+						ㄴ http 항목이나 서버 쿠키 항목에서 자세히 설명.
+					ㄴ Web Storage API <button>more</button>
+					<pre>
+						ㄴ 브라우저단에 key value 형태의 저용량 데이터 저장하는 기능 제공.
+						ㄴ 문자열 형태만 저장 가능.
+							ㄴ 숫자, 객체 등 저장시, 문자열로 변환되어 저장. 객체는 '[object object]' 같이 나옴.
+						ㄴ Storage라는 인터페이스를 통하여 동작. Storage에는 sessionStorage 또는 localStorage가 있고 이들을 이용.
+						ㄴ localStorage
+							ㄴ 데이터 만료기한 없음. 데이터는 js로 임의로 삭제하거나 브라우저 캐시를 지우거나 로컬 저장 데이터를 지우지 않는 한 영구 저장.
+							ㄴ 용량 크기는 대략 5MB
+							ㄴ window 객체의 localStorage 프로퍼티를 통하여 해당 origin의 local storage객체에 접근 가능. (window.localStorage)
+							ㄴ ??? UTF-16 string format을 사용한다? 문자당 2바이트 사용.
+							ㄴ 프로토콜에 따라서도 별개의 storage를 가진다. (즉, 같은 주소라도 http와 https가 각각의 storage를 가짐)
+							ㄴ 'file:' 형태의 url에 대해서는 localStorage 동작에 대해 정해진게 없어 브라우저에 따라 다를 수 있다.
+							ㄴ SecurityError
+								ㄴ 해당 origin의 scheme, host, port 쌍이 유효하지 않으면 해당 오류 발생.
+									ㄴ ex ) same-origin 정책을 위반했거나 등 또는 scheme가 file:, data: 등이거나.
+								ㄴ ??? 정책을 위반하는 경우? 유저가 브라우저에 페이지에서 데이터를 영구저장하는걸 막아놨거나 등.
+						ㄴ sessionStorage
+							ㄴ 페이지 세션 종료시 데이터 유지기간 만료. 즉, 브라우저(또는 탭)가 닫히기 전까지만 데이터 유지.
+							ㄴ window 객체의 sessionStorage 프로퍼티를 통하여 해당 origin의 session storage객체에 접근 가능. (window.sessionStorage)
+							ㄴ 세션 및 유지기간
+								ㄴ 브라우저 탭에서 document 로드시, 고유의 page session 생성. 해당 탭에 유일하게 매핑.
+								ㄴ 여러 탭이 origin이 같아도 각각의 sessionStorage 소유.
+								ㄴ 탭 복사시, sessionStorage 복사하여 생성.
+								ㄴ 해당 탭, 브라우저 창이 열려있는 동안 session 유지. 탭, 브라우저 종료시 sessionStorage는 clear됨.
+							ㄴ 그 외 localStorage와 동일.
+						ㄴ storage 이용가능 여부 확인
+							ㄴ 대부분의 브라우저에서 지원하겠지만, 아닌 경우도 있으므로 확인 필요.
+						ㄴ 사용법 )
+							ㄴ (*Storage*).setItem( (*키값*), (*값*) )
+								ㄴ web storage에 key-value쌍 데이터 저장.
+							ㄴ (*Storage*).getItem( (*키값*) )
+								ㄴ 저장소에 있는 데이터 중 (*키값*)과 동일한 키값을 가진 데이터 반환. 없음 null.
+							ㄴ (*Storage*).removeItem( (*키값*) )
+								ㄴ (*키값*)에 해당하는 key-value쌍 데이터 삭제.
+							ㄴ (*Storage*).clear()
+								ㄴ 저장소의 모든 데이터 삭제.
+							ㄴ (*Storage*).key( (*idx*) )
+								ㄴ storage의 (*idx*)번째 키값 반환.
+								ㄴ ??? (*idx*)에 매핑되는 키의 순서는 user-agent에 따라 다르다?
+						ㄴ storage event
+							ㄴ 'StorageEvent' 이벤트.
+							ㄴ 저장소 데이터에 변경사항 발생시 발생하는 이벤트.
+							ㄴ 같은 origin의 다른 페이지에서 저장소에 변경사항 발생시에만 발생한다. (origin 같으면 같은 저장소 사용함)
+								즉, 저장소의 데이터를 변경하는 페이지에서는 발생하지 않는다.
+							ㄴ sessionStorage에선 발생하지 않는다.
+							ㄴ ex )
+								window.addEventListener("storage", (e)=>{  // 'storage'란 키워드로 이벤트등록.
+									e.key;  // 변경된 키-값 데이터의 키.
+									e.oldValue;  // 변경된 키-값 데이터의 변경 전 값.
+									e.newValue;  // 변경된 키-값 데이터의 변경 후 값.
+									e.url;  // 데이터를 변경한 document의 url.
+									e.storageArea;  // Storage 객체.
+								} )
+					</pre>
+					ㄴ IndexedDB API )
+						ㄴ ??? database 시스템같이 복잡한 데이터 저장?
+						ㄴ 저장 가능한 데이터 타입 : 문자열, 숫자 등의 기본적 데이터 타입, 비디오, 이미지 등
+						ㄴ ??? db를 생성, 그 db안에 여러개의 'object store'를 생성?,
+							'object store'은 db의 table과 유사하며, 안에 object들을 포함하고 있는 형식?
+						ㄴ ~~~
+
+					ㄴ Cache API )
+						ㄴ 특정 HTTP 요청에 대한 응답을 저장해 놓기 위해 만들어짐.
+						ㄴ 웹사이트의 asset 파일들을 저장해 놓는데 유용.
+						ㄴ ??? 필수는 아니지만 보통 'Service Worker API'와 함꼐쓰인다함.
 
 			</pre>
 			기타<button>더보기</button>
@@ -5394,6 +5593,14 @@
 					ㄴ 그래픽을 그래는데 사용되는 xml 언어.
 				</pre>
 			</pre>
+            ㄴ 웹앱, 웹뷰, 하이브리드앱, 네이티브 앱
+                ㄴ 웹앱 : 모바일 웹앱이라 하지만 그냥 웹 어플리케이션 말함. 걍 웹사이트.
+                ㄴ 네이티브앱 : ios, android 등 특정 모바일os 기반으로하는 순수 모바일 어플리케이션.
+                ㄴ 웹뷰 : 네이티브앱 안에 들어가 있는 웹브라우저. html의 iframe처럼 일종의 네이티브앱의 컴포넌트.
+                ㄴ 하이브리드앱 : 기본적으로 웹앱이나 네이티브앱으로 wrap하여 일부 네이티브앱처럼 동작하는 앱.
+                    ㄴ 네이티브앱처럼 설치, 모바일os단 일부 기능 사용 가능 등.
+                    ㄴ 웹뷰를 사용하여 만들 수 있음.
+
 		</pre>
 	</pre>
 	<br>back-end<button>더보기</button>
@@ -5473,6 +5680,11 @@
 					ㄴ https://stackoverflow.com/questions/38712164/difference-between-socket-and-web-server-example
 					ㄴ ex) http요청을 받아서 처리해주는 httpd라는 '데몬프로그램'이 listening을 하고있다가 요청이 들어오면 이를 처리해준다.
 						http프로토콜 패킷형식에 맞게 패킷을 분석하여 처리해준다. (헤더부분의 method부분엔 무슨 스트링값이들어있는지(GET인지 POST인지) 등등)
+                ㅡ 서버 주소 www vs non-www
+                    ㄴ 큰 차이는 없으나,
+                    ㄴ subdomain 사용하는 경우, root 페이지에 www를 붙이면 서브도메인과 엄연히 구분되어
+                        클라이언트단에서 쿠키 사용 등이 용이하다는 약간의 장점.
+                    ㄴ www까지 붙이기 귀찮다는 약간의 단점.
 
 			ㅇ Apache Server<button>더보기</button>
 			<pre>
@@ -5635,7 +5847,6 @@
                                             #return 301 https://divlab.io$request_uri
 									}
 							}
-
                             server {
                                 listen 443 ssl;  #
                                 server_name bbdlab.kr;
@@ -5664,6 +5875,10 @@
                         ㄴ host의 ip, port를 먼저 보고 매칭되는 가상 서버를 찾고 그 다음 server_name을 매칭시킴.
                         ㄴ ~~~
                         ㄴ http://nginx.org/en/docs/http/request_processing.html 참고.
+                        ㄴ listen 지시자 오른쪽에 'default_server' 입력시 해당 포트에 대해 매핑 실패시 이 디폴트 서버로 매핑.
+                            ㄴ ex ) listen 80 default_server;
+                            ㄴ 명시적 default_server 없을시, 맨 위의 설정값이 디폴트서버가 됨.
+
                     ㄴ server_name
                         ㄴ http://nginx.org/en/docs/http/server_names.html 참고.
                     ㄴ ssl 설정<button>more</button>
@@ -9878,11 +10093,21 @@
                 <pre>
                     ㄴ ~~~
                     ㄴ runserver )
+                        ㄴ django-admin runserver [addrport]
+                            ㄴ addrport : ip주소, 포트번호. ex ) 0.0.0.0:8000
+                                ㄴ 서버가 돌아갈 ip주소와 포트번호 설정.
+                                ㄴ 디폴트 ip는 127.0.0.1
+                                    디폴트 포트는 8000
+                                ㄴ ip는 서버가 돌아갈 컴퓨터가 할당가능한 ip주소여야 한다.
+                                    아님 실행시 'that IP address can't be assigned to'오류.
+                                ㄴ ip 127.0.0.1(localhost)사용시, 이는 내부용 ip이기 때문에 외부에서 접속 불가.
+                                    외부접속하려면 0.0.0.0이나 내부ip(ex)192.168.0.23) 사용해야함. (필요시 포트포워딩은 당연하고)
                         ㄴ ~~~
                         ㄴ 상용 서버가 아닌 개발용 서버이기 때문에, 보안이나 성능에 대해 보장하지 않는다고 한다.
                             ㄴ 오래 실행되면 혼자 꺼지는 이슈도 이와 관련된게 아닌가 싶다.
                         ㄴ 옵션 )
                             ㄴ --noreload : runserver 실행중에 파이썬 코드 변경시 자동으로 서버를 재시작하는 기능을 끄겠다는 옵션.
+                            ㄴ
 
                 </pre>
 
@@ -9897,6 +10122,29 @@
                             ㄴ PROTECT
                             ㄴ RESTRICT
                                 ㄴ
+                    ㄴ Field<button>more</button>
+                    <pre>
+                        ㄴ model이 사용하는 field type, option 등에 대해 설명.
+                        ㄴ option<button>more</button>
+                        <pre>
+                            ㄴ
+
+                        </pre>
+                        ㄴ type <button>more</button>
+                        <pre>
+                            ㄴ ~~~
+                            ㄴ FileField
+                                ㄴ arguments )
+                                    ㄴ upload_to
+                                        ㄴ ??? 파일 저장될 경로 & 파일명?
+                                    ㄴ
+                                ㄴ primary_key 옵션 할당 불가.
+                            ㄴ ~~~
+
+                        </pre>
+
+
+                    </pre>
 					ㄴ 인스턴스 메소드<button>more</button>
 					<pre>
 						ㄴ __str__()
@@ -9995,8 +10243,31 @@
                             }
                     ㄴ timezone )
                         ㄴ
+                    ㄴ Session
+                        ㄴ ~~~
+                        ㄴ SessionMiddleware ~~~
+                        ㄴ 설정값들 )
+                            ㄴ SESSION_SAVE_EVERY_REQUEST
+                                ㄴ ??? 매 요청마다 session값을 업데이트
+                                ㄴ 업데이트하며, expire time을 SESSION_COOKIE_AGE에 맞게 업데이트함.
+                            ㄴ SESSION_COOKIE_AGE
+                                ㄴ 세션 지속 시간 설정. 세션을 설정한 값 시간동안 유지시킴. 초단위 정수. 디폴트 2주.
+                            ㄴ SESSION_COOKIE_NAME
+                                ㄴ 브라우저 쿠키에 세션키값이 저장될 때, 쿠키 키값 설정.
+                                ㄴ 디폴트 'sessionid'
+                                ㄴ 브라우저에서 도메인별로 쿠키값 목록을 구분하여 저장하기 때문에 일반적으론 쓸일 없으나,
+                                    도메인이 같고 포트만 다른데 다른 장고 플젝인 경우 등에는 쿠키값을 구분하는데 사용할 수 있다.
+                                    (브라우저는 도메인에 따라서만 쿠키값을 나누고 포트는 고려하지 않으므로?)
 
                 </pre>
+
+                ㅡ File handling
+                    ㄴ ~~~
+                    ㄴ request로 파일 받을시, request.FILES 속성에 파일 저장.
+                        dict 형태이며, key는 ???, 값에 파일이 저장.
+                    ㄴ request로 파일 받으려면, request method가 'POST' 필수.
+                        form 태그에 'enctype' 속성이 'multipart/form-data' 필수.
+                        아닐 경우, request.FILES 값은 빈 dict.
 
                 ㅡ DRF, Django Rest Framework<button>more</button>
                 <pre>
@@ -11100,6 +11371,7 @@
         </pre>
 
 	</pre>
+
 	<br>기타 지식<button>더보기</button>
 	<pre>
 		XPath<button>more</button>
@@ -11449,6 +11721,22 @@
 							ㄴ 절차적으로 작성된 쿼리는 집합적으로 재작성 필요.
                 </pre>
 
+                ㅇ 백업
+                    ㄴ ~~~
+                    ㄴ ??? 백업 전략
+                        ㄴ 백업 방법 종류
+                            ㄴ 전체 백업
+                                ㄴ ??? 물리적 백업?
+                                ㄴ ??? 모든 데이터를 백업 & 백업이 진행되는 중에 생긴 트랜잭션 로그 백업.
+                                ㄴ ??? db가 offline 상태에서 백업하는 경우 로그 필요 없고 online 상태에서 백업하는 경우 필요?
+                            ㄴ 차등 백업
+                                ㄴ ??? 가장 마지막 전체 백업 이후에 변경된 데이터만 백업.
+                            ㄴ 트랜잭션 로그 백업
+                                ㄴ ??? 트랜잭션 로그 파일 백업
+                        ㄴ 일반적으로 백업 방법들을 조합하여 백업 전략 설정.
+                            ex ) 전체 백업(주 1회, 2주분 보관) + 차등 백업(일 1회, 7일분 보관) + 트랜잭션 백업(시간당 1회, 3일분 보관)
+
+
 
 			</pre>
 
@@ -11792,36 +12080,967 @@
 
             Postgresql<button>more</button>
             <pre>
-                ㅡ ~~~
-                ㅡ 외부 접속 허용
-                    ㄴ
-                ㅡ 유저 검색
-                    ㄴ select * from PG_USER;
-                    ㄴ \du
-                ㅡ 유저 생성
-                    ㄴ create user (*user명*) (*옵션들*)
-                    ㄴ ex ) create user bbdlab SUPERUSER;
-                    ㄴ 옵션 )
+                ㄴ ~~~
+
+                ㄴ 값 표현식, value expression
+                    ㄴ 다양한 곳에서 사용. select문의 대상 리스트,
+                    ㄴ table expression(table 의미)과의 구분을 위해 'scalar', 'scalar expression' 라고도 부름.
+                    ㄴ 목록 )<button>more</button>
+                    <pre>
+                        ㄴ constant, literal value
+                            ㄴ string constant, numeric constant 등. 일반적으로 아는 문자, 숫자 상수값.
+                            ㄴ ex ) select 'hello', 123;
+                        ㄴ 컬럼 참조
+                            ㄴ (*테이블명*).(*컬럼명*)
+                            ㄴ ex ) basic_info.code
+                        ㄴ positional parameter, 위치 파라미터
+                            ㄴ ex ) select * from basic_info where code= $1
+                            ㄴ sql에 파라미터 형태로 인자를 외부로부터 받을 때, '$(*숫자*)' 형태로 파라미터 위치를 지정하는 표현.
+                        ㄴ subscripts,
+                            ㄴ ex) basic_info.arraycolumn[3], basic_info.arraycolumn[2:5], basic_info.multidimensionarray[12][32]
+                                    $1[21], (somefunction(a))[23]
+                            ㄴ 값이 array타입인 경우,  (*array타입 값 표현식*)[(*정수*)] 등과 같이 사용 가능.
+                            ㄴ 배열 슬라이스표현 ([2:5]), 다차원 배열인 경우, 위치 파라미터에 대해, 함수 결과값에 대해서도 사용 가능.
+                        ㄴ field selection, 필드 선택???
+                            ㄴ ex ) (*표현식*).(*필드명*)
+                            ㄴ 표현식이 복합타입인 경우?(row형태 등처럼 여러값들을 가지고 있는 경우), 그 중 특정 필드를 추출하는 표현식.
+                            ㄴ 일반적으로 (*표현식*) 부분은 소괄호로 감싸며,
+                                (*표현식*)이 일반 테이블인 경우, 생략 가능.
+                                (*표현식*)이 일반 테이블인 경우, 위에서 나온 표현식 중 하나인 '컬럼 참조'이며, 이는 'field selection'의
+                                일부라고 할수 있다.
+                            ㄴ 컬럼 자체가 복합 타입인 경우 자주 쓰인다.
+                                ㄴ ex ) (myTable.compositeCol).somefield
+                                    ㄴ myTable 테이블의 compositeCol이 복합타입 컬럼인 경우.
+                        ㄴ 연산자 호출
+                            ㄴ ex ) (*표현식*) (*연산자*) (*표현식*)  또는 (*연산자*) (*표현식*)
+                        ㄴ 함수 호출
+                        ㄴ 집계 표현식
+                            ㄴ (*집계 명*) ( (*표현식*), ... )
+                            ㄴ (*집계 명*) ( all (*표현식*), ... ) : 모든 input row들에 대해 집계.
+                            ㄴ (*집계 명*) ( distinct (*표현식*), ... ) : input row 중 중복 제외한 것들에 대해 집계.
+                            ㄴ ~~~
+                            ㄴ 대부분의 집계시, null은 배제하고 계산.
+                            ㄴ 대부분의 집계시, input row들의 정렬 여부가 상관 없지만, 일부의 경우, 정렬에 따라 결과 다를 수 있다(array_agg, string_agg)
+                                이런 경우, (*표현식*) 뒤에 order by를 붙여 집계시 정렬기준을 설정할 수 있다.
+                                ㄴ array_agg input으로 들어온 값들을 배열로 만들어 반환.
+                                ㄴ 'order by'는 집계함수의 모든 인자 다음에 와야 한다. ex ) string_agg(a, ',' order by a)
+                                ㄴ 'distinct'와 같이 사용시, distinct에 명시된 목록만 order by에 사용할 수 있다.
+                            ㄴ ??? ordered-set aggregate
+                                ㄴ order by 구문이 필수인 일부 집계함수들? rank, percentile 계산 등.
+                                ㄴ 'WITHIN GROUP ()' 구문 안에 order by 구문이 작성된다?
+                                ㄴ ~~~ ???
+                            ㄴ 결과 리스트, 'HAVING'절에만 집계 표현식 사용 가능.
+                                집계표현식 처리 순서 때문???
+                        ㄴ window 함수 호출
+                            ㄴ
                         ㄴ ~~~
-                ㅡ db 생성
-                    ㄴ create database (*db명*) (*옵션들*);
-                    ㄴ ex ) create database bbdlab OWNER bbdlab;
-                    ㄴ 옵션 )
-                        ㄴ OWNER : db의 소유자 지정. 해당 db에 대해 여러 권한을 가짐.
-                ㅡ db 삭제
-                    ㄴ drop database (*db명*);
-                ㅡ talbe 목록
+                    </pre>
+
+                ㄴ 데이터 정의
+                    ㄴ 디폴트 값
+                        ㄴ 표현식 가능. 디폴트값 insert 순간 처리.
+                    ㄴ generated column
+                        ㄴ 다른 컬럼들로부터 계산되는 컬럼.
+                        ㄴ 분류 )
+                            ㄴ stored generated column : insert/update시 계산되어 저장소에 저장.
+                            ㄴ virtual generated column : read시 계산.
+                        ㄴ postgresql은 'stored generated column'만 지원.
+                            ㄴ 'create table' 구문 안에 'GENERATED ALWAYS AS' 구문 사용.
+                            ㄴ ex )
+                                CREATE TABLE people (
+                                    ...,
+                                    height_cm numeric,
+                                    height_in numeric GENERATED ALWAYS AS (height_cm / 2.54) STORED
+                                );
+                        ㄴ ~~~
+                    ㄴ constraint<button>more</button>
+                    <pre>
+                        ㄴ 테이블, 컬럼에 다양한 제약조건 설정 가능.
+                        ㄴ 컬럼 정의에 정의된 제약조건을 '컬럼 제약조건'
+                            컬럼 정의와 나란히 정의된 제약조건을 '테이블 제약조건'이라함.
+                            ㄴ ex )
+                                CREATE TABLE products (
+                                    product_no integer,
+                                    name text,
+                                    price numeric CONSTRAINT positive_price CHECK (price > 0)
+                                    discounted_price numeric CHECK (discounted_price > 0),  -- 컬럼제약조건
+                                    CHECK (price > discounted_price)  -- 테이블 제약조건
+                                );
+                        ㄴ Check constraint
+                            ㄴ 가장 기본적 제약조건.
+                            ㄴ constraint (*제약조건명*) check (*표현식*)
+                                ㄴ 'constraint (*제약조건명*)' 생략가능
+                                ㄴ 컬럼 제약조건, 테이블 제약조건 둘다 가능.
+                            ㄴ ex )
+                                CREATE TABLE products (
+                                    product_no integer,
+                                    name text,
+                                    price numeric CONSTRAINT positive_price CHECK (price > 0)
+                                    discounted_price numeric CHECK (discounted_price > 0),
+                                    CHECK (price > discounted_price)
+                                );
+                                ㄴ 맨 아래줄같이 컬럼 정의 자리에 제약조건을 정의 가능.
+                            ㄴ 확인할 (*표현식*)부분이 true, null으로 평가되면 조건 충족으로 취급. 유의 필요.
+                            ㄴ ~~~
+                        ㄴ Not-Null constraint
+                            ㄴ '컬럼 제약조건'으로만 정의 가능.
+                            ㄴ 해당 컬럼값으로 null이 오지 않도록 하는 조건.
+                            ㄴ ex )
+                                CREATE TABLE products (
+                                    product_no integer NOT NULL,
+                                    name text NOT NULL,
+                                    price numeric NOT NULL CHECK (price > 0)
+                                );
+                        ㄴ Null constraint
+                            ㄴ 형식은 Not-Null과 동일.
+                            ㄴ 기능은 단지 해당 컬럼이 null일 수 있음을 명시.
+                        ㄴ Unique constraint
+                            ㄴ 테이블 row 전체에서, 특정 컬럼/컬럼 조합이 유일함을 제약.
+                            ㄴ CONSTRAINT (*제약조건명*) UNIQUE
+                                또는 CONSTRAINT (*제약조건명*) UNIQUE( (*컬럼1*), (*컬럼2*), ... )
+                                ㄴ 'CONSTRAINT (*제약조건명*)' 생략가능.
+                            ㄴ ex )
+                                CREATE TABLE products (
+                                    product_no integer UNIQUE,
+                                    name text,
+                                    price numeric,
+                                    UNIQUE(product_no, name)
+                                );
+                            ㄴ 컬럼 제약조건, 테이블 제약조건 둘다 가능.
+                            ㄴ 컬럼 목록에 대해 B-tree index가 자동 생성.
+                            ㄴ 조건 평가시 null 값.
+                                ㄴ 디폴트로, null은 같은 값 취급 안함.
+                                    즉, 컬럼값 중 null이있으면 다른값취급.
+                                ㄴ UNIQUE 뒤에 'NULLS NOT DISTICT' 키워드 붙여 반대 동작 가능.
+                                ㄴ 디폴트 동작은 'NULLS DISTICT'
+                                ㄴ ex ) UNIQUE NULLS NOT DISTICT (product_no, name)
+                        ㄴ Primary key
+                            ㄴ 특정 컬럼/컬럼 조합이 테이블 내 row들 중에서 유일한 식별자임을 제약.
+                            ㄴ UNIQUE이고 'NOT NULL'이어야 함.
+                            ㄴ ex )
+                                CREATE TABLE products (
+                                    product_no integer PRIMARY KEY,
+                                    name text,
+                                    price numeric
+                                );
+
+                                CREATE TABLE example (
+                                    a integer,
+                                    b integer,
+                                    c integer,
+                                    PRIMARY KEY (a, c)
+                                );
+                            ㄴ UNIQUE와 마찬가지로 B-tree index 생성.
+                                그리고 자동 'NOT NULL' 설정.
+                            ㄴ 테이블에 최대 1개의 primary key 제약조건 설정 가능.
+                        ㄴ Foreign Key
+                            ㄴ 특정 컬럼의 값이 다른 테이블의 값과 일치해야함을 제약. ('두 테이블간의 참조 무결성을 유지함'이라 표현)
+                            ㄴ ~~~
+                            ㄴ 자기 자신 테이블에 대한 외래키를 설정하는 것을 'self-referential 외래키'라함.
+                            ㄴ cascade
+                                ㄴ 외래키가 참조하고 있는 테이블 row가 삭제되려할때, 어떤 동작을 취할지 설정 가능.
+                                ㄴ ex )
+                                    CREATE TABLE order_items (
+                                        -- 'ON DELETE (*옵션*)'으로 CASCADE 동작 설정.
+                                        product_no integer REFERENCES products ON DELETE RESTRICT,
+                                        order_id integer REFERENCES orders ON DELETE CASCADE,
+                                        quantity integer,
+                                        PRIMARY KEY (product_no, order_id)
+                                    );
+                                ㄴ 옵션 목록 )
+                                    ㄴ NO ACTION
+                                        ㄴ 외래키로 참조되고 있는 row의 삭제를 제한함. 에러를 발생시킴.
+                                            ??? 단, contraint check가 연기되었을시, 기다렸다가 체크타임에 체크.
+                                        ㄴ 디폴트 값.
+                                    ㄴ RESTRICT
+                                        ㄴ 외래키로 참조되고 있는 row의 삭제를 제한함.
+                                        ㄴ NO ACTION과 다르게 constraint check가 연기되지 않음.
+                                    ㄴ CASCADE
+                                        ㄴ 외래키로 참고되고 있는 row를 삭제하고, 참조하고 있는 table의 row도 같이 삭제.
+                                    ㄴ SET NULL ( (*컬럼1*), (*컬럼2*), ... )
+                                        SET DEFAULT ( (*컬럼1*), (*컬럼2*), ... )
+                                        ㄴ 외래키로 참조되고 있는 row 삭제시, 이를 참조하고 있는 row의 컬럼을 NULL 또는 DEFAULT값으로 설정.
+                                        ㄴ NULL이나 DEFAULT로 설정할 컬럼 지정 가능.
+                                        ㄴ DEFAULT 설정시, 디폴트값은 매칭되는 fk값이어야함. 아닌 경우 동작 실패.
+                                ㄴ 어플리케이션에 따라 적절한 옵션선택 필요.
+                                    ㄴ 두 데이터가 완전히 종속적이고 독립적으로 존재하기 어려우면 CASCADE가 적절.
+                                    ㄴ 그게 아니라면 나머지 옵션 중 적절히 선택.
+                                ㄴ ON UPDATE
+                                    ㄴ ON DELETE 와 유사하게, 외래키로 참조되는 컬럼값이 변경되는 경우,
+                                        이를 참조하고 있는 외래키 컬럼값을 어떻게 처리할지 설정 가능.
+                                    ㄴ CASCADE인 경우, 동일하게 값 update.
+                                    ㄴ ON NULL, ON DEFAULT의 경우, 컬럼 설정 불가.
+                    </pre>
+
+                ㄴ data type
+                    ㄴ ~~~
+                    ㄴ Numeric type
+                        ㄴ ~~~
+                        ㄴ numeric
+                            ㄴ ~~~
+                            ㄴ 'Infinity', '-Infinity', 'NaN'
+                                ㄴ 각각 양의 무한대, 음의 무한대, 'not-a-number'를 의미.
+                                ㄴ IEEE 754 표준부터 적용되었다함.
+                                ㄴ numberic 타입은 이러한 값들을 value로 입력받을 수 있음.
+                                    ㄴ 작은따옴표로 해당 키워드를 감싸 입력 가능. ex ) update table set x='-Infinity';
+                                    ㄴ 해당 값 insert 방지.
+                                        ㄴ 약간 트릭 필요.
+                                        ㄴ 컬럼 정의에 'check' 제약조건으로 (*해당 컬럼값*)=(*해당 컬럼값*) 을 하여 오류가 뜨게할 수 있음.
+                                            ㄴ ex )
+                                                CREATE TABLE your_table (
+                                                   your_column NUMERIC CHECK (your_column = your_column)
+                                                );
+                                            ㄴ 'NaN'값은 같은 'NaN'값과 = 비교를 해도 false가 나옴을 이용한 것.
+                                        ㄴ 'BEFORE INSERT' 키워드 사용.
+
+
+                ㄴ window function <button>more</button>
+                <pre>
+                    ㄴ 결과 row에 대해 특정 기준으로 파티션을 나누고(window처럼) 이에 대해 집계 함수 등을 적용하는 기능.
+                    ㄴ ex )
+                        SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary;
+                        ㄴ 'avg(salary) OVER (PARTITION BY depname)' 부분이 window function.
+                        ㄴ avg(salary)는 일반 group by에 의한 집계함수와 동일하게 작동하지만,
+                            'OVER' 문에 의해 window function이 적용되어 그 집계 대상이 일부로 제한 된다.
+                            ㄴ 이 예의 경우, depname이 동일한 row가 일부가 된다.
+                    ㄴ 'OVER' clause
+                        ㄴ OVER clause로 일반 함수/non-window 집계함수와 window function 구분.
+                        ㄴ window function에 의해 처리되기 위해 쿼리의 결과 row들이 어떻게 분리될지를 정의.
+                        ㄴ PARTITION BY (*표현식*)
+                            ㄴ row들을 (*표현식*)의 값이 동일한 것들끼리 묶어 partition을 만듦.
+                            ㄴ 뒤에 ORDER BY 적용 가능. (window function에 따라 필요한 경우들 있음)
+                        ㄴ 당연하지만, from, where, group by 절, 등등을 모두 적용한 다음 결과 row 목록에 대해 window function이 적용.
+                            ㄴ 따라서, 이러한 clause들에는 window function을 적용할 수 없다.
+                                select 리스트, order by 리스트에만 적용 가능???
+                    ㄴ non-window 집게함수 적용 후 window function이 적용.
+                        하여, window function구문에 non-window 집계함수 사용 가능.
+                    ㄴ window frame
+                        ㄴ window function에 의해 분리한 partition 내부에서 또 묶인 일부의 row 목록.
+                        ㄴ 특정 window function에 경우, 이러한 window frame에 대해 연산이 적용됨.
+                        ㄴ 가령, 'OVER'절에 'ORDER BY' 명시시,
+                            window frame은 partition 처음부터 현재 row + order by 기준에 대해 현재 row와 같은 row가 된다.
+                            즉 매 row마다 window frame이 변경되며, window frame을 사용하는 window functino들은
+                            이 window frame에 대해 특정 연산을 수행한다.
+                </pre>
+
+                ㄴ Transactions
+                    ㄴ 여러 단계들을 하나로 묶어, 모두 적용하거나 아무것도 적용하지 않는다.
+                        중간 단계들은 다른 병렬의 트랜잭션들에게 보이지 않고, 트랜잭션 완료 전 실패가 발생하면, 아무것도 db에 적용되지 않는다.
+                    ㄴ sql 앞뒤에 'BEGIN', 'COMMIT'을 붙여 트랜잭션 적용.
+                        ㄴ ex )
+                            BEGIN;
+                                update accounts set ~~~ ;
+                            COMMIT;
+                        ㄴ 명시하지 않으면, 각각의 sql statement에 대해 트랜잭션이 디폴트로 적용.
+                    ㄴ 트랜잭션 중간에 COMMIT전에 트랜잭션 내의 현재까지의 연산을 적용하지 않고 되돌리려면 'ROLLBACK'명령어 사용.
+                    ㄴ 트랜잭션 내의 특정 지점까지는 연산을 유지하고 그 다음부터의 연산만 되돌리려면
+                        특정 지점에
+                            SAVEPOINT (*savepoint명*);
+                        특정 지점 이후의 내용을 되돌리려면
+                            ROLLBACK TO (*savepoint명*);
+
+                ㄴ Inheritance, 상속
                     ㄴ
-                ㅡ table 생성
-                    ㄴ create table (*table명*) (
-                            (*컬럼명1*) (*타입*) (*설정들*),
-                            (*컬럼명2*) (*타입*) (*설정들*),
-                            ~~~
-                        );
+
+                ㄴ performance tip <button>more</button>
+                <pre>
+                    ㄴ ~~~
+                    ㄴ 대량 데이터 삽입<button>more</button>
+                    <pre>
+                        ㄴ 'COPY' 명령어 사용.
+                            ㄴ 여러 기능은 상대적으로 적지만, 대량 데이터 로딩에 부하가 적음.
+                            ㄴ ??? CREATE TABLE, TRUNCATE 명령어와 함께 사용될 때 가장 빠르다함. ~~~
+                            ㄴ COPY command<button>more</button>
+                            <pre>
+                                ㄴ ~~~
+                                ㄴ view나 상속구조 테이블에서 자식 테이블의 데이터는 copy하지 않는다.
+                                    이를 위해선 단일 테이블명을 copy 명령어에 사용하는게 아닌 쿼리를 사용해라.
+                                ㄴ 삽입 중 오류 발생시 전체가 취소되므로 사전 처리 필요.
+                                    ㄴ 가령, unique 제약 위반하는 row 존재시 이를 conflict on 같이 필터링 할 수 없음.
+                            </pre>
+                        ㄴ 'PREPARE' 명령어 사용.
+                            ㄴ
+                        ㄴ 대량의 데이터인 경우, copy가 insert보다 대부분 빠르다함.
+                            insert에 prepare가 사용되고, 한 트랜잭션 안에 batch로 insert하더라도.
+                    </pre>
+                    ㄴ index 제거
+                        ㄴ 새 테이블을 만드는 경우,
+                            테이블 생성, copy로 bulk insert, table에 index 추가  순서의 방식이 가장 빠르다.
+                            데이터를 삽입하며 점진적으로 index가 추가되는 것보다, 이미 있는 데이터들에 대해 index를 만드는게 빠르기때문.
+                        ㄴ 하여, 기존 데이터들이 있는 테이블에 대량의 데이터를 삽입하는 경우,
+                            인덱스를 삭제 후, bulk insert 후, 다시 인덱스를 만드는 것이 더 빠를 수 있다.
+                            물론, 인덱스가 없는 동안의 다른 연산의 성능 이슈와, ??? unique index로 인한 unique조건 체크를 고려해야한다.
+                    ㄴ foreign key 제거
+                        ㄴ index의 경우와 마찬가지로, 외래키를 제거하고 bulk insert 후 외래키를 다시 추가하는 것이 더 빠를 수 있고,
+                            이에 따른 외래키 조건 체크를 고려해야한다.
+                </pre>
+
+                ㄴ Write-Ahead Logging (WAL)<button>more</button>
+                <pre>
+                    ㄴ ~~~
+                    ㄴ 관련 설정<button>more</button>
+                    <pre>
+                        ㄴ ~~~
+                        ㄴ archive_timeout
+                            ㄴ integer 값.
+                            ㄴ ??? WAL 파일들은 완료처리된? 다 쓰여진 WAL segment 파일들만 쓰인다?
+                            ㄴ WAL record가 매우 적을 경우, 완료된 WAL segment파일이 없어 이슈가 생길 수 있다.
+                            ㄴ archive_timeout값 설정시, 새 WAL 파일을 쓰기 시작한 후, 해당 시간이 지나면 db 서버가
+                                쓰고있던 WAL파일을 완료처리하고, 새 WAL파일에 쓰기를 시작한다.
+                            ㄴ ??? 단위 안적으면 디폴트로 second를 단위로 취급.
+                            ㄴ 이 설정으로 인해 상대적으로 더 일찍 완료처리된 WAL파일도 이 설정이 적용 안되어 다 채워진 WAL파일과
+                                동일한 크기를 가짐.
+                                따라서, 너무 짧게 설정하는것은 저장공간을 불필요하게 부하시킴.
+                            ㄴ 메뉴얼에선 1분이 적당하다함.
+                                더 짧게 하려면, streaming replication 권장한다함.
+                            ㄴ postgresql.conf 파일 또는 server command line으로 설정 가능.
+                        ㄴ archive recovery 관련 설정
+                            ㄴ 다음 설정들은 'recovery' 동안에만 적용되는 설정들.
+                                따라서, 수행하려는 recovery동작 전에 적절히 설정되어야함.
+                                ㄴ 'recovery' 동작이란, 서버를 standby 서버로 사용하거나,
+                                    단순히 데이터 손실로부터 회복을 위해 지정한 recovery를 수행하는 것을 말함.
+                            ㄴ restore_command
+                                ㄴ ??? WAL file을 받아오는데 사용될 shell명령어 문자열?
+                                ㄴ recovery시, archive된 wal file segment를 받아오는 명령어를 설정. 문자열값.
+                                ㄴ 형식 )
+                                    ㄴ '%f' : target이 되는 wal file의 이름으로 대체됨.
+                                    ㄴ '%p' : target wal file을 복사해갈 목적지 경로명으로 대체됨. (현재 working directory에 상대경로)
+                                    ㄴ '%r'
+										ㄴ restart point. 다음 복구 재시작시, 복규를 시작하는 지점???
+										ㄴ 마지막 restart point가 있는 wal파일의 이름으로 대체된다. 즉, 복구 시작시 해당 파일부터 반드시 있어야함.
+											다시말하면, 해당 파일 이전 파일들은 따로 다른곳에서 사용하는게 아닌 이상 얀속적인 복구를 하는데 더이상 필요치 않음.
+										ㄴ ex ) 00000001000000000000000C wal file까지 archive에서 받아와 restore를 하였다면, %r은
+											파일명 00000001000000000000000C 을 가리킴.
+											(근데 몇 초 안에 바로 반영되는 것 같지는 않음)
+                                ㄴ ex )
+                                    // /mgt/server/archivedir 하위에 있는 archived된 wal file들을 복사해서 가져감. (recovery에 쓰려고)
+                                    restore_command = 'cp /mnt/server/archivedir/%f "%p"'
+                                    restore_command = 'copy "C:\\server\\archivedir\\%f" "%p"'  # Windows
+                                ㄴ (archive_command와 비슷하게) 해당 명령이 성공한 경우에만 0을 반환해야함.
+                                    ㄴ archive에 없는 파일명을 요청받을 것이고, 이 경우 0이 아닌값을 반환해야함.
+                                        ㄴ wal file을 파일명인 일련번호대로 archive location에서 계속 찾고, 아직 wal file이 쌓이지 않거나 하여
+                                            찾는 다음 wal file이 없는 경우가 빈번하고, 이게 진짜 문제가되는 오류는 아니라서 ?
+                                    ㄴ 예외인 경우는 마찬가지로 archive_command와 유사하게 SIGTERM signal이나 shell 에러에 의해 종료된 경우.
+                                ㄴ postgreslq.conf 파일 또는 server command line을 통해 설정 가능.
+							ㄴ archive_cleanup_command
+								ㄴ 위 'restore_command'의 %r 키워드에서 설명한 recovery 재시작 포인트가 새로 갱신?될 때마다 호출되는 명령어 설정.
+								ㄴ ??? 정확한 호출 시점은 모르겠음. archive로부터 wal쌓이면 바로 restore하여 적용은 하는데
+									이때마다 restart point가 갱신되는것같지는 않음. 더 주기가 길다. (%r키워드 로그찍어가며 확인해본것)
+								ㄴ 'pg_archivecleanup' 명령어와 같이 쓰인다.
+									ㄴ pg_archivecleanup
+										ㄴ archive_cleanup_command = 'pg_archivecleanup (*archivelocation*) %r'
+											ㄴ아커이브로케이션은 삭제되어야할 wal파일이 위치하는 폴더 경로.
+											ㄴ %r은 위에서 설명한댜로.
+											ㄴ ex ) archive_cleanup_command = 'pg_archivecleanup /var/lib/pgsql/13/archive %r'
+										ㄴ 논리적으로 %r 이전에 해당하는 모든 wal파일들을 삭제.
+										ㄴ 당연히 보관해야할 wal파일의 양을 줄이려 사용.
+										ㄴ 장기젇으로 보관해야할지 삭제할지는 잘판단해야할 문제.
+										ㄴ여러개의 standby서버가 같은 아카이브 위치에서 벅언을 하고있ㄴ 경우 주의해야한다.
+										ㄴ??? archive_cleanup_command가 아닌 단독으로 사용시, ‘.partial’ , ‘.backup’ prefix를 가진 wal file을 기준으로 이전 wal파일들을 삭제한다. 이는 base backup 사용시 편리하다.
+										ㄴ서버 실행자는 아카이브로케이션에 대한 읽기 쓰기 권한이 있어야한다.
+
+                    </pre>
+
+                </pre>
+
+                ㄴ backup, restore<button>more</button>
+                <pre>
+                    ㄴ SQL Dump<button>more</button>
+                    <pre>
+                        ㄴ db 백업 기능.
+                            SQL 명령어로된 파일을 생성하여 이 명령어들을 서버에 restore시 파일 생성시점의 db 상태와 동일한 db를 만듦.
+                            dump 실행 순간의 db 상태를 저장.( snapshot을 생성하듯)
+                        ㄴ postgresql에서 'pg_dump' 프로그램을 이용하여 해당 작업 수행가능.
+                            ㄴ postgresql의 클라이언트 프로그램 중 하나.
+                                ㄴ 따라서 임의의 클라이언트단(postgre로 해당 db에 접속하는 어디든)에서 dump를 실행할 수 있다.
+                            ㄴ pg_dump (*db명*) > (*dump파일명*)
+                        ㄴ dump 실행 중에도 다른 db연산들은 실행됨.
+                            ㄴ ??? 단 독점 lock이 필요한 연산은 예외. (alter table 등?)
+                        ㄴ ??? db 연결은 일반 클라이언트 인증메커니즘과 동일하다.
+                        ㄴ 단 하나의 db만 dump 가능.
+                        ㄴ 다른 백업 방법(file-level backup, continuous archiving backup)과 다르게
+                            dump방식은 새로운 postgre 버전에 적용할 수 있다.
+                            또한 32bit, 64bit 등 다른 기계 아키텍처간 db전송이 가능하다.
+                            ㄴ 다른 백업 방법들은 특정 버전에 제한된다.
+                        ㄴ output format
+                            ㄴ plain-text
+                                ㄴ 일반 텍스트 형식.
+                                ㄴ sql command로 이루어짐.
+                                ㄴ postgresql의 psql 클라이언트 프로그램을 이용해 restore 가능한 형식.
+                                    이 외의 형식들은 pg_restore 클라리언트 프로그램 이용.
+                            ㄴ
+                        ㄴ ??? template0와 관련됨? dump로 데이터 추출하는 db에서 커스텀된 template1가 있다면
+                            이 내역들이 restore되는 db에도 적용되게됨?
+                        ㄴ pg_dump 옵션들
+                            ㄴ -n
+                            ㄴ -t
+                            ㄴ -h : 연결할 서버의 주소 명시. 디폴트는 localhost 또는 ??? 'PGHOST' 환경변수의 값.
+                            ㄴ -p : 연결할 서버의 포트 명시.
+                            ㄴ -U (*username*)
+                                ㄴ ??? pg_dump는 디폴트로 db연결시 현재 사용자의 username을 연결하려는 db의 username으로 입력하며
+                                    연결시도.
+                                ㄴ 이 옵션으로 연결시 사용할 username 명시가능.
+                            ㄴ -F (*format명*)
+                                ㄴ output의 파일형식 설정.
+                                ㄴ 목록 )
+                                    ㄴ p (=plain)
+                                        ㄴ plain text sql script형태. 디폴트값.
+                                    ㄴ c (=custom)
+                                        ㄴ
+                                    ㄴ d (=directory)
+                                        ㄴ ~~~
+                                        ㄴ 사용시, pg_dump에 -f 옵션 추가 필수.
+                                    ㄴ t (=tar)
+
+                        ㄴ restoring dump
+                            ㄴ pg_dump의 결과물은 'psql' 프로그램이 읽을 수 있는 형태로 만들어지며,
+                                psql로 dump 결과물을 읽게하는 명령어는 다음과 같다.
+                                psql (*db명*) < (*dump파일명*)
+                            ㄴ restore할 db에서 ??? 객체를 소유하고 있거나 객체에 대해 권한이 승인된 모든 유저가 존재해야한다.
+                                아닐 경우 ownership, 권한 이슈로 객체생성을 못하여 restore 실패.
+                            ㄴ restore 중 오류 발생시, 디폴트 동작은 나머지를 계속 실행하는 것.
+                                이를 변경하려면 psql --set ON_ERROR_STOP=on ~~~ 와 같이 옵션을 주어 오류 발생시 종료하게 해야함.
+                            ㄴ restore가 한 트랜잭션에서 수행되어 모두 적용되거나 모두 롤백되도록 하려면
+                                psql에 -1 또는 --single-transaction 옵션 추가.
+                                ㄴ 현재까지 진행되었던 모든 restore가 모두 롤백되므로 많은 시간을 날릴 수 있어 유의필요.
+                            ㄴ ??? pipe를 이용해 한 서버에서 dump와 동시에 다른 서버로 restore를 할 수 있다.
+                                ㄴ ex ) pg_dump -h host1 dbname | psql -h host2 dbname
+
+                        ㄴ pg_dumpall
+                            ㄴ ??? db cluster 관련 컨텐츠 전체를 dump하는데 사용?
+
+                        ㄴ 대용량 dump output 처리.
+                            ㄴ pg_dump는 output을 standard output에 write 할 수 있음.
+                                이를 이용해 os단에서 파일 최대 크기가 제한되어 dump output file 관련 이슈가 생기는 경우 해결 가능.
+                            ㄴ 사용 예 )
+                                ㄴ output 압축
+                                    ㄴ ex )
+                                        pg_dump (*db명*) | gzip > (*파일명*).gz
+                                        gunzip -c (*파일명*).gz | psql (*db명*)
+                                        cat (*파일명*).gz | psql (*db명*)
+                                ㄴ split 사용
+                                    ㄴ ~~~ ???
+                                ㄴ custom dump format
+                                    ㄴ ??? ~~~
+                                ㄴ parallel dump 기능
+                                    ㄴ pg_dump에는 병렬모드가 있어 여러 테이블들을 동시에 dump할 수 있다.
+                                    ㄴ dump 속도 상승 & db서버 부하 증가.
+                                    ㄴ pg_dump -j 3
+                                        ㄴ
+                                    ㄴ 이 모드 사용시, output format은 'directory' 이어야함.
+                                        디렉토리만 멀티 프로세스가 동시에 write가능하기 때문.
+                                    ㄴ 이 모드 사용시, 옵션으로 넘긴 값 + 1 만큼의 연결 생성.
+                                        ㄴ db max connection 수에 유의.
+                                    ㄴ 이 모드로 dump 중, db object에 대한 독점 lock 연산 실행시 dump 실패 가능성 존재.
+                                        ㄴ ???~~~
+                                    ㄴ 이 모드 사용 위해선, db server가 'synchronized snapshot' 기능을 지원해야함.
+                                        ㄴ postgresql 9.2부터 지원.ㅓ
+                                        ㄴ ??? synchronized snapshot이란
+                                            db 클라이언트가 서로 다른 connection을 사용하고 있어도 같은 데이터set을 보게해주는 기능?
+                                    ㄴ restore시 pg_restore -j 사용.
+
+                    </pre>
+                    ㄴ File System level backup<button>more</button>
+                    <pre>
+                        ㄴ ??? db가 데이터를 저장하는데 사용하는 파일을 직접적으로 복사하여 백업하는 방식?
+                            ㄴ ??? 파일의 위치?
+                            ㄴ ??? 해당 파일을 복사하는 방법 뭐든 사용 가능? 그냥 복사만 해서 가지고 있으면 된다?
+                        ㄴ 조건
+                            ㄴ db서버가 꺼져있어야함. restore시에도 마찬가지.
+                                ㄴ ??? 모든 연결을 끊어 막는 등의 방법은 안먹힘?
+                                    tar같은 툴들이 파일시스템의 원자적 스냅샷을 찍지 않기 때문에, 그리고 서버 내의 버퍼 때문에?
+                            ㄴ ??? db 파일시스템에 대해 잘 아는 경우, 파일이나 폴더로부터 특정 테이블이나 db만을 백업하거나 restore하는걸
+                                시도할 수 있으나, 먹히지 않는다.
+                                ??? 해당 파일에 있는 정보들은 커밋 로그 없이 사용할 수 없기 때문?
+                                ㄴ ??? 커밋 로그 파일이란 'pg_xact/*'에 위치하고, 모든 트랜젝션에 대한 커밋상태를 포함?
+                                ㄴ 전체 백업 & 전체 클러스터 복원만 가능?
+                        ㄴ ??? 방법 중 하나로 file system의 snapshot 기능?
+                        ㄴ ~~~ ???
+
+                    </pre>
+                    ㄴ 지속적 보관 & 특정시점복구(Point-in-Time Recovery, PITR)<button>more</button>
+                    <pre>
+                        ㄴ postgresql은 클러스터의 데이터 폴더의 'pg_wal/' 위치에 WAL파일(write ahead log)을 관리.
+                            wal log들은 데이터베이스에 가해지는 모든 변경사항을 기록.
+                            충돌방지 목적. db 시스템에 충돌 발생시, 마지막 체크포인트 이후의 wal로그들을 재실행하여 무결성을 해치지 않게 복구 가능.
+                            이 wal을 이용해 백업도 가능. 파일시스템 백업과 WAL을 함께 사용하는 방식.
+                            먼저 파일시스템을 이용해 복구한뒤, WAL 로그들을 재실행시켜 복구하는 방식.
+                        ㄴ 장점
+                            ㄴ ~~~???
+                            ㄴ wal file을 쌓는것만으로 지속적인 백업이 가능하다. 이는 full backup을 자주하는게 어려운 대규모 db에 좋다.
+                            ㄴ wal file을 처음부터 끝가지 재생시킬 필요가 없다. 원하는 시점에서 중단하여 그 시점에 해당하는 db상태를 만들 수 있다.
+                            ㄴ 같은 base backup을 가지고 있는 다른 기계에게 wal file을 계속 적용시킴으로서 'warm standby system'을 만들수있다.
+                                이는 언제든 구동시킬 수 있고, 가장 최신상태에 근접한 복사본을 가지게 된다.
+                        ㄴ pg_dump 등을 이용하는 dump방식 백업은 WAL을 이용한 백업과 같이 사용할만한 부분이 없다고 한다.
+                        ㄴ 위에서 말했듯이, file system backup과 같이 사용되며, 이 방식은 db cluster 전체에 대해서만 백업이 가능하다. 일부만은 불가.
+                        ㄴ 저장공간을 많이 차지하는 방식이다.
+                        ㄴ 이방식을 사용하기 위해선, 쌓여있는 wal file들이 필요하며, 이 wal file은 최소한 백업을 시작한 시점부터는 있어야한다.
+                        ㄴ WAL archiving 설정 <button>more</button>
+                        <pre>
+                            ㄴ 추성적의미에서 postgre는 끊임없이 wal record를 샹산해낸다.
+                                그리고 이recodr들을 ‘WAL segment file’이라는 16MB의 물리적 단위로 나눈다.
+                                각 세그만트는 추상적 개념상 일련의 wal 중 위치를 나타내는 숫자를 부여받는다.
+                                wal archiving을 사용하지 않으면 포스트그리는 몇갸의 세그먼트 파일만을 샹성하고
+                                이들 중 더이상 필요치 않은 시그먼트파일의 이름을 다음 시그먼트 일련번호로 변경함으로서 이 몇갸의ㅜ세그먼트파일들을 재사용한다.
+                                즉, 체크포인트 앞에있는 내용의 wal 파일들은 필요없다 가정하는것.
+                                archiving wal을 하려면, 세그먼트파일에 내용이 채워질 때, 이 내용을 캐치하여 세그만트파일이 재사용되기 잔에
+                                다른곳에 저장해야한다.
+                                이 ‘다른곳에 저장‘하는 방법은 자유롭게 정할 수 있다. NFS-mount 디렉토리에 복사하든, cd에 batch하든.
+                                shell command나 복사에 사용할 lib을 명시하는 것을 통하여 이 자유로운 방법을 결정할 수 있다.
+                                cp명령어로 단순히 복사하든 c언어 함수를 호출하든.
+                            ㄴ 설정방법
+                                ㄴ wal_level 설정을 ‘relplica’ 이상으로 설정
+                                ㄴ archive_mode를 ‘on’
+                                ㄴ postgresql.conf파일의 ahrchive_command에 shell명령어 설정 또는 archive_library에 라이브러리 명시.
+                                ㄴ archive_command 형식
+                                    ㄴ %p. 쌓일 파일의 경로로 댜체. 생성될 WAL file의 경로(파일명 포함)
+                                    ㄴ %f. 쌓일 파일명으로 대체. 생성될 WAL file의 이름.
+                                    ㄴ 문자 %에 대한 이스케이프는 %%
+                                    ㄴ ex)
+                                        archive_command = 'test ! -f /mnt/server/archivedir/%f && cp %p /mnt/server/archivedir/%f'  # Unix
+                                        archive_command = 'copy "%p" "C:\\server\\archivedir\\%f"'  # Windows
+                                        대체 후,
+                                        test ! -f /mnt/server/archivedir/00000001000000A900000065 && cp pg_wal/00000001000000A900000065 /mnt/server/archivedir/00000001000000A900000065
+                                    ㄴ archive될 새 파일들에 대해 해당명령어들이 수행된다.
+                                    ㄴ 명령어는 postgre가 실행되는 유저의 ownership으로 실향된다.
+                                    ㄴ archive command는 상공적으로 수행했을 때만 exit status 0값을 반환해야 한다.
+                                        0반환하면 포스트그리가 성공적으로 wal파일의 내용이 archive되었다 판단하고 삭제하거나 재사용하기때문.
+                                        0 반환 안하면 실패라 간주하고 주기적으로 재시도함.
+                                ㄴ archive_library 사용하는 방식
+                                    ㄴ~~~
+                                ㄴ archive command가 signal에 의해 종료되거나(???SIGTERM signal 제외),
+                                    shell이 125이상의 종료 상태값과 함께 에러를 던지거나,
+                                    archive function이 'ERROR'나 'FATAL'을 내보내는 경우,
+                                    ??? archive 프로세스는 중단된뒤, postmaster에 의해 재시작된다?
+                                ㄴ archive command나 archive lib는 기존에 존재하는 archive 파일을 덮어쓰지 않도록 해야한다. archive파일 무결성을 위해.
+                                ㄴ archive command나 archive lib가 기존 존재하는 archive파일을 덮어쓰지 않는지, returnn값에 문제가 없응지 등을 반드시
+                                    테스트해야함.
+                                    또한 저장공간이 가득차거나, 운영자가 개입하여 처리해야 하는 이슈가 있어 archiving이 반복적으로 실패하는 케이스를 고려해야한다.
+                                    또한, 에러 상황이나 운영자에 대한 처리 요청이 적절히 기록되도록 해야한다.
+                                    처리되지 않고 wal파일이 끝없이 쌓이는 경우, db가 shut down될 수 있다.
+                                    archive command나 archive lib의 수행 속도가 WAL데이터 생성 속도의 평균치를 따라잡기만 한다면
+                                    수행 속도는 크게 문제되지 않는다.
+                                    archiving 프로세스가 좀 뒤쳐저도 db의 다른 연산들은 상관없이 진행된다.
+                                    이로 인해, 많이 뒤쳐지면, 문제 발생시 데이터 손실이 발생할 수 있고
+                                    ???또한, pg_wal폴더에 아카이브되지 않은 wal파일이 점점 쌓여 용량초과를 일으킬 수 있다.
+                                    ???pg_wal에는 안쌓이지 않나? 계속 재사용하느까. 아카이브가 안되면 계속 쌓이나? 실습 필요.
+                                    따라서 arching 프로세스에 대한 모니터링이 필요하다.
+                                ㄴ archive되는 파일명은 최대 64글자이며, ASCII문자, 숫자, dot의 조합일 수 있다.
+                                    ㄴ ??? 파일의 상대경로 (%p)는 변경 가능해도, 파일명(%f)는 유지도어야한다?
+                                ㄴ wal을 통한 restore가 데이터는 복구시켜주지만 설정파일들에 대해선 복구되지 않는다. postgresql.conf, pg_hba.conf 등.
+                                ㄴ archive command, lib는 '완료된 wal file'에 대해서만 동작한다.
+                                    따라서 WAL traffic이 적은 경우, 딜레이가 있을 수 있다. 이 경우 'archive_timeout' 설정 사용 가능. (WAL 부분 참고)
+                                    ㄴ 'pg_switch_wal'을 통하여 바로 현재 wal file을 완료처리할 수 있다.
+                                ㄴ wal_level을 'minimal'로 설정시, 일부 sql연산은 wal에 쓰여지지 않는다.
+                        </pre>
+                        ㄴ base backup<button>more</button>
+                        <pre>
+                            ㄴ pg_basebackup tool 사용.
+                                ㄴ pg_basebackup
+                                    ㄴ db data cluster 내의 파일들의 복사본을 생성하여 백업.
+                                    ㄴ ~~~
+                                    ㄴ 옵션 )
+                                        ㄴ -X
+                                            ㄴ 백업 중에 생긴 wal파일을 백업 결과에 포함시킨다.
+                                                이를 통해 standalone 백업이 가능하다???
+                                            ㄴ 값 목록 )
+                                                ㄴ None : wal 파일을 포함시키지 않음.
+                                                ㄴ
+                            ㄴ ~~~
+                            ㄴ 백업할 경우, 파일 시스템 백업 중간에, 그리고 그 이후에 생긴 WAL 파일을 확보해야한다.
+                                ㄴ 이를 위해 base backup 프로세스가 'backup history file'이란걸 생성.
+                                    다른 WAL 파일이 archive되듯이, wal file이 archive되는 곳에 바로 저장되며,
+                                    ??? file system backup에 필요한 첫번째 wal파일명 뒤에 추가적인 문자열이 붙는식의 이름을 가진다.
+                                    ex ) '000100~~001D'가 그 wal파일이면, '000100~~001D.023810.backup' 와 같은 형식.
+                                    ??? 이 이름보다 작은 숫자의 wal파일들은 해당 file system backup을 restore하는데 있어  더이상 필요치 않다?
+                                    이미 base backup에 반영이 되었으므로? 하지만 보험용으로 가지고 있을수는 있다.
+                                    ??? 내용은 단순 텍스트이며, 백업 관련 여러 정보다 들어있다?
+                            ㄴ ??? 마지막 base backup때까지 archive된 모든 wal파일을 가지고 있어야 하므로,
+                                base backup 주기는 archive된 wal파일을 보관하는데 얼마만큼의 저장공간을 사용할지에 따라 결정된다?
+                                ㄴ ??? 왜 마지막 basbackup까지 archive된 wal파일들을 보관해야? pg_basebackup으로 백업하면 현재 데이터를 파일째 복사하고,
+                                    기존 wal파일들을 이미 적용이 되있을 것이고, 필요없지 않나?
+                        </pre>
+                        ㄴ Continuous Archive backup을 이용하여 recovering<button>more</button>
+                        <pre>
+                            ㄴ ??? 위에서 설명한 방법들로 base backup, wal archive를 이용해 db 복구하는 방법.
+                            ㄴ 순서
+                                ㄴ 1. 우선 서버 정지
+                                ㄴ 2. 여유 저장공간이 충분하다면, 보험용으로 전체 cluster data directory를 따로 복사해둠.
+                                    여의치 않으면, pg_wal 폴더라도. 마치 archive되지 못한 로그가 있을 수 있으므로.
+                                ㄴ 3. cluster data directory 아래의 모든 파일 삭제.
+                                    tablespace 사용시, 이들의 root directory 삭제.
+                                ㄴ 4. file system backup으로부터 restore. (적절한 ownership, permission으로 restore해야함)
+                                    ??? tablespace사용하는 경우, pg_tblspc 폴더의 심볼링 링크가 정확한지 확인해야함.
+                                ㄴ 5. pg_wal 아래 파일들 삭제.
+                                    이 파일들은 파일시스템백업으로부터 왔으므로, 굳이 쓸모가 없다.
+                                    ??? pg_wal에 아예 archive를 하지 않았었다면, 적절한 permission으로 생성해놓아라?
+                                    ??? 이전에 pg_wal을 심볼릭링크로 사용한 경우, 그렇게 다시 설정해두어라?
+                                ㄴ 6. 2번 단계에서 따로 복사해둔 '아직 archive 되지 않은 wal 파일'이 존재한다면,
+                                    pg_wal 안으로 복사해라.
+                                ㄴ 7. cluster data directory에 'recovery.singal' 파일을 생성하고 postgresql.conf에
+                                    recovery 관련 설정을 한다. ('restore_command' 등)
+                                    recovery가 완료될때까지 다른 일반유저가 연결할 수 없도록 잠시 pg_hba.conf를 수정할 수 있다.
+                                ㄴ 8. 서버를 시작. 서버가 recovery 모드에 들어갈것이고, archive된 wal파일을 읽어 recovery가 진행될 것이다.
+                                    ??? 외부 오류로 인해 복구 종료시, 서버 재시작하면 알아서 복구를 계속한다함.
+                                    recovery완료시, 서버는 recovery.signal파일을 삭제 후, 일반 db연산을 시작.
+                                ㄴ 9. db가 정확한 상태로 recovery되었는지 확인. 아닐시, 1번 단계로 돌아간다.
+                                    맞다면, 7번에서 pg_hba.conf를 변경했었다면 되돌려놓는다.
+                            ㄴ 7번 단계에서 설정하는 restore_command 중요. postgre에게 archived된 wal file segment들을 어떻게 가져올지를 설정하는 것.
+                                WAL 설명부분 참고.
+                            ㄴ ??? wal file만 restore_command를 통해 요청받는건 아니다? '.history' suffix인 파일들도 있다?
+                            ㄴ ??? restore_command의 '%f'와 '%p'의 base name은 다르다? 서로 상호교환가능할거라 여겨선 안된다?
+                            ㄴ 찾는 wal file이 archive location에 없는 경우, 다음으로 pg_wal에서 찾는다.
+                            ㄴ recovery 프로세스는 마지막엔 restore_command에 설정한 명령어 실행 중 '파일을 찾을 수 없다'는 오류로 끝난다.
+                                또한, 프로세스 시작 시점에 '00000001.history' 파일을 찾을 수 없다는 오류가 뜰수있다.
+                                이들은 실제 오류가 아닌 일반적인 진행 과정이다.
+                            ㄴ 과거 특정한 시점으로 recovery 하고 싶으면 'recovery target' 설정을 이용.
+                                ㄴ 단, base backup으로 백업되는 부분 안에서는 특정 시점으로 recovery는 안됨. base backup으로 복구되는 시점 이후,
+                                    wal file로 복구하는 지점 중에 존재하는 특정 시점으로의 복구만 가능.
+                            ㄴ wal file 복구중 충돌 발견시, 복구가 중단되고 서버가 자동으로 재시작하지 않음.
+                                ??? 충돌 지점 이전으로 'recovery target'을 지정하여 복구과정을 재실행시켜 복구를 완료할 수 있다.
+                                ㄴ recovery target
+                                    ㄴ 일반적으로 recovery 프로세스는 wal 파일의 마지막 부분까지 복구시키지만, recovery target을 이용하면
+                                        그 이전지점까지만 복구를 진행할 수 있다.
+                                        config 파일에 다음 설정값들로 설정할 수 있다.
+                                        recovery_target, recovery_target_lsn, recovery_target_name, recovery_target_time,
+                                        recovery_target_xid 들의 경우, 이 중 하나만 명시 가능. 아닌 경우 에러.
+                                        설정 후 서버 재시작 필요.
+                                    ㄴ 설정값들
+                                        ㄴ ~~~
+                            ㄴ 복구 과정이 외부 요인으로 실패한 경우(시스템 충돌, wal 파일 접근권한 등), 실패지점부터 다시 시작할 수 있다.
+                                ??? ~~~
+                        </pre>
+                        ㄴ ??? Timeline ??? 실습필요<button>more</button>
+                        <pre>
+                            ㄴ ??? 위에서 과거 특정 시점으로 recovery가 가능하다고 했는데, 이때 시간순서에 상관없이 임의의 시점으로 왔다갔다하며 복구를
+                                해야 하는 경우가 있다면, 이렇게 왔다갔다 하는 과정에서 wal파일이 덮어씌여져버리면 해당 지점으로 이동할 수 없게 된다.
+                            ㄴ 이러한 문제를 위해 postgresql에선, 복구가 완료될 때마다 그 지점부터 시작되는 'timeline'을 생성하고 해당 타임라인에 속하게 된다.
+                                git 의 branch와 유사? merge가 없이 특정 지점(git에선 commit, 여기선 특정 wal지점)에서
+                                새로운 가지로 뻗어나가기만 하는 branch라보면 된다?
+                                ex) 복구하면 timeline 2생성 & 그 시점부터 쌓이는 wal로그는 timeline 2에 속함.
+                                    또 다른 위치로 복구시, timeline 3 생성...
+                                그 지점부터 생기는 wal은 해당 타임라인에 속하게 되며, 타임라인에 속한 wal파일끼리는 이름이 구분되어 다른 타임라인의 wal파일이
+                                덮어쓰지 않게된다.
+                                ex ) pg_wal/000000010000000000000001 =>timeline 1에 속함. pg_wal/000000020000000000000001 => timeline 2에 속함.
+                                타임라인이 생성될 때, 00000002.history 와 같은 형식의 history파일이 생성. 'timeline history'라 부름. archive location에 생성.
+                                해당 타임라인에 대한 분기지점 정보를 가지고 있음. 즉, 어느 타임라인에서 생성된 타임라인인지.
+                                ex) timeline1의 A시점으로 복구시, timeline2가 생기고, 이 timeline2는 timeline1의 A에서 분기한 것.
+                                    timeline2 위의 특정 시점B으로 복구시, timeline3이 생기고,
+                                    이 timeline3은 timeline1의 A -> timeline2 B 순으로 분기한 것. 이런 정보가 텍스트로 적혀있음.
+                            ㄴ 복구시 디폴트 동작은, archive location에서 찾을 수 있는 가장 최신 timeline까지 복구하는 것.
+                                ??? 특정 timeline으로 복구하려면 ~~~???
+                        </pre>
+                        ㄴ PITR 팁 및 주의사항<button>more</button>
+                        <pre>
+                            ㄴ 쌓이는 wal 파일의 크기가 부담된다면 archive시 압축하여 저장할 수 있다.
+                                archive command나 archive라이브러리 사용시 압축하여 저장하고 복구시 압축해제 로직을 추가하면 된다.
+                            ㄴ command로 archive나 restore할 경우, config파일에 직접 명령어를 문자열로 입력하기보다
+                                스크립트 파일을 사용하면 깔끔하다.
+                                ㄴ archive_command를 스크립트로 사용시, 'logging_collector' 설정을 해야
+                                    스크립트에서 stderr로 쓰여지는 메세지가 db 서버 로그에 쓰여진다.
+                            ㄴ PITR기술 자체에 한계가 존재하고 이와 관련된 주의사항들.
+                                ㄴ ??? ~~~
+                                ㄴ 'CREATE TABLESPACE' 명령은 wal 로그에 기록시 절대경로로 기록된다.
+                                    따라서 wal을 replay하는 경우, 그 절대경로에 tablespace를 만들게된다.
+                                    로그가 다른 기계에서 replay되거나 같은 기계에서 replay되는 경우, 고정된 절대경로에 tablespace를 만들게 되므로
+                                    이를 원치 않을 수 있다. 해당 경로의 기존 데이터를 덮어쓸 수도 있고.
+                                    ??? 이런 문제를 방지하기 위해선 tablespace를 새로만들거나 drop할때마다 새로운 base backup을 실행하라한다?
+                            ㄴ 디폴트 WAL file format은 ??? 많은 디스크 페이지 스냅샷을 포함하고 있기 때문에 꽤 크기가 크다.
+                                ~~~ ???
+                        </pre>
+                    </pre>
+
+                </pre>
+
+                ㄴ High Availability, Load balancing, replication<button>more</button>
+                <pre>
+                    ㄴ 고가용성(high availability) : 여러 데이터베이스 서버가 함께 동작하다가, 메인 서버가 문제가 생겼을 때,
+                        서브 서버를 사용하는 것.
+                    ㄴ ~~~
+                    ㄴ 여러 db 서버가 같이 동작하도록 하려는 경우, 동기화 문제 존재.
+                        ㄴ 읽기 요청인 경우, 그냥 어느 서버건 데이터를 read하여 반환하면 되지만,
+                            write 요청인 경우, 다른 서버들에도 write내용을 전달하여 동기화시켜야하기때문.
+                        ㄴ 이를 간단히 해결할 수 있는 하나의 해결책은 존재하지 않는다함. 여러 해결 방법들이 있고 이를 사용하게됨.
+                        ㄴ
+                            ㄴ 하나의 서버만 데이터를 수정하도록하는 방식.
+                            ㄴ 데이터를 수정하는 서버를 'read/write server' / 'master server' / 'primary server' 라 부름.
+                                수정된 데이터를 팔로잉하기만 하는 서버를 'standby server' / 'secondary server' 라 부름.
+                            ㄴ primary 서버로 승격되기 전까지 실제 연결시키지 않는 서버를 'warm standby server'라 부름.
+                            ㄴ 실제 연결을 받고, read 요청만 받는 서버를 'hot standby server'라 부름.
+                    ㄴ 방법들
+                        ㄴ 공유디스크를 이용한 장애처리
+                            ㄴ
+                        ㄴ 파일 시스템 replication
+                            ㄴ db의 파일시스템 자체를 복제. 한 db의 데이터에 변경 발생시, 다른 db의 데이터에도 파일시스템 차원에서
+                                변경사항을 복제하여 동일하게 만듦.
+                            ㄴ ??? 운영서버의 변경순서와 동일한 순서로 파일시스템이 대기서버에서 복제되어야 한다?
+                            ㄴ ??? 솔루션 ) linux의 DRBD
+                        ㄴ WAL shipping <button>more</button>
+                        <pre>
+                            ㄴ warm / hot standby 서버는 primary서버의 WAL record stream을 읽어 최신 상태 유지 가능.
+                            ㄴ primary가 문제가 생겼을 때, primary서버 대체 가능.
+                            ㄴ ??? WAL shipping은 동기적 방식 또는 비동기적 방식으로 수행 가능?
+                            ㄴ ??? db서버 전체에 대해서만 수행가능하다
+                            ㄴ ??? db테이블에 대한 변경을 요하지 않아 관리 편함
+                            ㄴ ??? primary 서버에 상대적으로 성능부하를 일으키지 않음.
+                            ㄴ WAL record를 보내는 방식에 따라 'file-based log shipping', 'record-based log shipping'으로 분류.
+                                ㄴ file-based log shipping
+                                    ㄴ WAL record 파일을 전송하는 방식.
+                                    ㄴ WAL record 파일 하나에 16MB.
+                                    ㄴ 같은 시스템상에 있건, 다른 시스템상에 있건, globe가 다르건 쉽게 전송 가능.
+                                ㄴ record-based log shipping
+                                    ㄴ primary에 WAL record가 생기면 이를 바로 standby로 보내는 방식.
+                                    ㄴ file-based에 비해 상대적으로 더 최신 상태 유지 가능.
+                            ㄴ WAL shipping은 비동기이다.
+                                ㄴ 즉, primary에서 commit 후, standby로 WAL가 전송되는 것.
+                                ㄴ primary서버에 치명적인 문제 발생시, 데이터가 전송되지 못하고 손실될 수 있다.
+                            ㄴ db server의 archive_timeout설정으로 wal file 저장 간격 조정 가능. (WAL 설명 부분 참고)
+                                ㄴ 이를 이용해, primary서버에 오류로 인해 데이터 손실 발생시, 그 손실되는 데이터 크기를 줄일 수 있다.
+                            ㄴ ??? recovery 성능은 충분히 좋다.
+                                standby서버가 활성화된 후 일반적으로 몇분이면 완전히 사용 가능하다.
+                            ㄴ standby server가 read-only 쿼리에 사용될 수 있으며, 이를 'hot standby server'라 한다. (이후 설명함)
+                            ㄴ ???
+                                ㄴ 운영 서버와 standby서버는 최대한 유사하게 구성.
+                                    ㄴ ??? db server관점에서 특히?
+                                    ㄴ ??? tablespace들과 관련된 경로명들은 수정없이 바로 전달되기때문에
+                                        primary와 standby서버가 동일한 마운트포인트를 가져야한다?
+                                        ㄴ ??? 'CREATE TABLESPACE' 명령 실행 전에, primary와 standby서버에서
+                                            이 명령 실행을 위한 새로운 마운트포인트가 생성되어 있어야 한다.
+                                    ㄴ 하드웨어는 완전히 동일할 필요는 없으나 유사할수록 이후에 유지보수하기 쉽다.
+                                        하드웨어 아키텍쳐는 동일해야한다. ex) 32bit, 64bits 등.
+                                ㄴ 두 서버의 major release level이 같아야한다.
+                                    ㄴ 서로 다른 minor release level이면 가능하다
+                                    ㄴ 새로운 minor release 로 업데이트하려면, standby서버를 먼저 업데이트하는게 좋다?
+                                        새 minor release는 이전 minor release의 WAL file을 읽을 수 있는 경우가 그 반대의 경우보다
+                                        많으므로.
+                            ㄴ standby 서버 동작.
+                                ㄴ 서버 시작시, data directory에 'standby.singal' 파일 존재시, 서버가 standby mode가 된다.
+                                ㄴ standby 모드에서, 서버는 primary서버로부터 받은 WAL들을 지속적으로 적용시킨다.
+                                ㄴ standby는 'WAL archive' 또는 primary로부터의 TCP연결을 통해 직접 WAL을 읽을 수 있다.
+                                ㄴ ??? 또한 standby는 pg_wal 폴더의 WAL파일을 이용하여 restore을 한다.
+                                    ㄴ 일반적으로 이경우는, standby가 restart하기 전에 primary로부터온 stream된 WAL파일을 재실행시키는
+                                        경우에 해당한다.
+                                    ㄴ 물론 수동으로도 가능하다.
+                                ㄴ ??? standby는 시작시,
+                                    'resotre_command'를 이용하여 archive location에 있는 이용가능한 모든 WAL file로
+                                    restoring을 시작.
+                                    모든 WAL파일의 끝에 도달하고, restore_command가 실패했을 때, pg_wal 폴더의 모든 WAL파일로 restore.
+                                    이것도 실패시, streaming replication이 설정되어있으면 primary server로 연결을 시도하여
+                                    archive나 pg_wal에 존재하는 'last valid record' 지점부터 WAL을 stream하여 받아옴.
+                                    streaming replication이 설정되어있지 않거나, streaming 연결이 끊기면, 가장 처음단계부터 다시시작.
+                                    서버가 멈추거나, 'trigger file'에 의해 'failover'가 트리거되기 전까지 위 과정을 반복.
+                                ㄴ 'pg_ctl promote'가 실행되거나, pg_promote()가 호출되거나, trigger file(promote_triiger_file)이
+                                    발견되면, standby mode가 종료되고 일반 연산모드로 전환된다. ??? primary로 전환된다?
+                                    ㄴ ??? failover전에 archive나 pg_wal에 있는 이용가능한 WAL들은 restore된다.
+                            ㄴ primary 서저 세팅
+                                ㄴ WAL 설명부분을 참고하여 WAL archiving 설정을 한다.
+                                    이때, archive location은 primary가 다운되어도 standby가 접근할 수 있는 곳,
+                                    즉, primary 서버 내가 아닌, standby서버나 다른 안전한 위치이ㅓㅇ야한다.
+                                ㄴ streaming replication을 사용하려면, standby로부터의 replication 연결을 허용하기 위해
+                                    ??? role생성 후, pg_hba.conf에 적절한 entry를 생성 후, database field를 'replication'으로 설정한다?
+                                ㄴ ??? max_wal_senders, (replication slot 사용시) max_replication_slots 설정을 한다.
+                                ㄴ base backup을 하여 standby 서버를 부팅한다.(base backup에 대해선 '백업'부분 참고)
+                            ㄴ standby 서버 세팅
+                                ㄴ primary서버로부터 받은 base backup을 restore.
+                                ㄴ standby.signal 파일을 postgre data directory에 생성.
+                                ㄴ 'restore_command' 설정. war archive로부터 파일을 복사해옴.
+                                    ㄴ
+                                    ㄴ restore_command는 파일이 존재하지 않으면 즉시 return해야함. 서버가 명령어를 재시도하기 때문.
+                                ㄴ ??? 여러개의 standby서버를 두려는 경우, recovery_target_timeline을 'latest'로 설정해야함.
+                                ㄴ streaming replication 기능 쓰려면 primary_conninfo 설정 필요. 연결할 디비에 댜한 정보 설정.
+                                ㄴ standby를 고가용성 기능으로 사용하려는 경우 failover시 primary를 대체하기 위해
+									archiving, 연결, 인증 등에 대한 서버를 primary와 동일하게 설정해두어야 한다.
+								ㄴ archive_cleanup_command를 통해 더이상 standby에게 필요없는 wal파일을 삭제해 wal archive의 공간을 최소화할 수 있다.
+								ㄴ standby가 아닌 백업목적으로 wal을 archive하고 있다면 당연히 standby에게 더 필요가 없어도 삭제하면 안된다.
+									최소한 base backup 시점 이후부터의 wal파일이 있어야 한다.
+
+                            ㄴ primary_conninfo 설정
+                                ㄴ standby server가 데이터를 보내는 서버에 연결할 때 사용할 연결정보를 나타내는 문자열.
+                                ㄴ server가 standby server인 경우에만 영향을 미침.
+                                ㄴ sending 서버의 호스트명 명시 필요.
+                                    standby server와 포트 다를시, 포트번호 명시 필요.
+                                    sending server에 대해 적절한 권한을 받은 user와 필요시 비번 명시 필요.
+                                    db명은 명시하지 않는다?
+
+                                ㄴ 입력 형식 )
+                                    ㄴ https://www.postgresql.org/docs/13/libpq-connect.html#LIBPQ-CONNSTRING 참고
+									ㄴ ex ) 'host=192.168.1.50 port=5432 user=foo password=foopass'
+                                ㄴ 옵션 명시되지 않을시, 일치하는 환경변수를 참조. 이것도 없으면 디폴트 사용.
+									ㄴ https://www.postgresql.org/docs/13/libpq-envars.html 참고.
+                                ㄴ postgresql.conf 파일 또는 server command line으로 설정 가능.
+                                ㄴ WAL receiver process 실행중 설정값 변경시, receiver process는 종료됨. 다시 재시작해야함.
+
+							ㄴ streaming replication <button>more</button>
+							<pre>
+								ㄴ 파일 기빈 log shipping보다 더 최신상태를 유지하게 해줌. wal file이 모두 차는걸 기다리지 않고
+									primary와 연결하여 wal record 생성시마다 primary로부터 받아온다.
+								ㄴ 사용시 디폴트 설정은 비동기 리플리케이션이다.
+									즉, p에 커밋된시점과 standby에서 변경사항이 적용되기까지 약간의 딜레이 존재. 매우 작긴하다함.
+									s가 변경사항 적용에 뒤쳐지지만 않는다면 1초 미만이라함.
+								ㄴ streaming replication 사용시, archive_timeout으로 데이터 손실창을 줄일필요 없다.
+								ㄴ ???wal 파일 아카이빙 없이 스트리밍 리플리케이션 사용시, 서버가 오래된 wal segment파일을 재사용해서
+									standby서버가 받지 못하는 경우가 있을 수 있다? (???스트리밍으로 wal record쏘는거 아닌가? wal파일이 사라지는게 뭔상관?
+									모든 wal들은 일단 pg_wal에 저장 후, 그 다음 stream으로 전송된다?
+									pg_wal에 wal record를 우선 쌓고, 여기의 wal record를 walsender가 스트림으로 walreceiver에게
+									전송한다함. 하여, 매우 많은 wal record가 빠르게 생기면서, wal segment의 ??? wal_keep_size가 뭔설정인지 이해안감)
+									이런경유 standby는 새 base backup으로 재초기화되어야 한다. wal_keep_size 설정 또는 replication slot을 설정하여 예방 가능.
+									wal 파일 아카이빙 사용시엔 필요없다. 아카이빙된 wal로 놓친부분을 따라잡을 수 있기땨문.
+								ㄴ streaming replication 설정방법
+									ㄴ standby server설정에서 추가적으로 primary_conninfo를 설정하여 primary server를 명시.
+										이를 설정하기만 하면, 자동으로 walsender, walreciver 프로세스가 생기며 streaming 시작함.
+										ㄴ 프라이머리의 호스트명, 포트, 프라이머리로 접속할때 사용할 유저명, 비밀번호를 명시함.
+										ㄴ primary에서 listen_address 설정과 pg_hba.conf파일 설정하여 스탼바이가 프라이머리에 잡근할 수 있게한다.
+									ㄴ ???keepalive socket 옵션을 지원하는 시스템에선 ~~~???
+									ㄴ max_wal_senders로 스탠바이에서 프라이머리로 최대 병렬연결 가능한 연결 개수 설정.
+								ㄴ ??? 설정이 모두완료되면 스탠바이는 아카이브에있는 모든 이용가능항 wal들을 재실행한 뒤 프라이머리에 연결한다.
+									이후 스탠바이이선 walreceiver, 프라이머리에선 walsender 프로세스가 실행된다. (???wal archive에서도 같은 이름이던가?)
+								ㄴ인증
+									ㄴ 접근권한을 적절히 설정하여 특정 유저만 wal stream을 읽을 수 있게 해야한다.
+									ㄴ 스탠바이는 replication 권한이 있는 유저 또는 슈퍼유저로 프라이머리에 접근해야함.
+										replication, login 권한이 있는 replication용 유저를 따로 두는게 좋다.
+									ㄴ replication 권한은 프라이머리에 대한 데이터 수정을 허용하지 않는다함.
+									ㄴ 설정은 pg_hba.conf에서 database를 replication으로 설정하여 가능
+								ㄴ모니터링
+									ㄴ 스트림 복제 사용시 유의해서 봐야할 값은 파라이머리에서 생성된 뒤 아직 스탠바이에 적용되지 않은 wal record의 양이다.
+									ㄴ primary의 wal write location과 standby의 마지막으로 받은 wal location을 확인하여 이 지연을 계산해볼 수 있다.
+										각각, primary에서의 pg_current_wal_lsn(), standby에서의 pg_last_receive_lsn() 관리자 함수를 통하여
+										또는 ps 명령어로 확인할 수 있는 walsender, walreceiver에 대한 정보를 통해 location을 확인할 수 있다.
+									ㄴ db view의 일종인 'pg_stat_replication'을 통하여 primary의 walsender 프로세스에 대한 정보를 볼 수 있다.
+										가령, pg_stat_replication의 'sent_lsn'(마지막으로 standby로 전송한 wal의 location값)과
+										pg_curent_wal_lsn()값 사이의 차이가 커지면 primary가 과부화가 있어 write한 wal을 보내지 않고 있을 수 있거나
+										'sent_lsn'과 standby의 pg_last_receive_lsn()값과의 차이가 커지면 네트워크상의 오류로 primary에서
+										전송한 데이터를 standby에서 받지 못하고 있거나 standby에 과부화가 있어 받지 못하고 있을 수도 있다.
+									ㄴ standby에선 'pg_stat_wal_receiver' view를 통해 walreceiver 프로세서에 대한 정보를 볼 수 있다.
+							</pre>
+							ㄴ replication slot <button>more</button>
+							<pre>
+								ㄴ ~~~
+								ㄴ ??? 정확히 어떤 방식으로 내부 동작하여 이런 기능을 만드는지?
+									wal파일들을 따로 다른 곳에 저장하는지? 아님 pg_wal폴더에서 삭제되지 않게만 하는지?
+									pg_wal에서 삭제되지 않게만 하는거면 wal_keep_size 설정과 다른게 뭔지? standby들에서 모두 적용되었는지를
+									모니터링 한다는 것이 차이?
+									ㄴ ??? gpt는 replication_slot에 일종의 meta데이터를 저장하여 wal파일이 pg_wal에서 삭제되지 않도록만 한다하는데.
+								ㄴ replication slot 사용 대신 wal_keep_size 설정이나 wal segment file archive를 통해 stadnby가
+									필요로 하는 wal segment가 삭제되는 것을 방지할 수 있다.
+									??? 하지만 이 방법들은 필요 이상의 wal segment들을 남기는 경우가 있다함.
+									??? 그에 반해 replication slot은 딱 필요한 만큼의 segment만 남긴다함.
+									ㄴ wal_keep_size
+										ㄴ standby에서 stream replication으로 wal을 받아오는 경우에, primary에서 pg_wal에 지난 wal파일을
+											얼마나 남길지 최소값 크기를 설정. standby가 primary에 대한 replication이 좀 밀려도,
+											primary에서 pg_wal을 재사용하느라 덮어써버려 standby가 받아올 차례인 wal record가 없어져 버리는 것을 방지 위해.
+											standby가 이 wal_keep_size 이상으로 replication이 밀리게 되면, replication 연결이 실패하며 끊긴다고함.
+											단, wal을 archive하고 있으면 이 파일들로 복구 가능.
+										ㄴ default값은 0. standby를 위해 추가적인 wal을 남기지 않음. 아예 안남긴다는게 아니고.
+										ㄴ 단위는 default로 megabyte.
+								ㄴ ??? replication slot이 pg_wal에 할당된 공간 이상으로 많은 수의 segment를 저장할 수도 있다함.
+									max_slot_wal_keep_size 설정을 통해 slot에 남기는 wal file의 크기를 제한 가능.
+								ㄴ ??? 내부적으로 어떻게 동작하는지? 대략 별도 파일에 데이터를 담아둔다는거 같은데 구체적인 동작 방식에 대한
+									내용이 찾는데 오래 걸릴 것 같아 패스.
+								ㄴ ~~~
+								ㄴ cascading replication
+									ㄴ ~~~
+								ㄴ synchronous replication
+									ㄴ ~~~
+							</pre>
+                            ㄴ standby에서의 continuous archiving
+								ㄴ standby에서 지속적으로 wal파일을 아카이빙하는 것에 대해 설명.
+								ㄴ archive_mode 설정
+									ㄴ wal segment를 archive하는 방식에 대한 설정.
+									ㄴ enum값. 'off', 'on', 'always'
+										ㄴ off : archive 안함.
+										ㄴ on
+											ㄴ archive 함. 서버가 archive recovery, standby 모드인 경우 안함.
+											ㄴ standby인 경우, primary로 승격되면 archive함. 단, 이전에 안했던 wal파일들을 archive하지는 않음.
+										ㄴ always
+											ㄴ 서버가 archive recovery, standby 중이어도 archive 수행.
+												이 경우, archive나 스트림 리플리케이션으로부터 restore된 파일들을 아카이빙함.
+								ㄴ 스탠바이에서 지속적 아카이빙하는 경우 두가지 케이스로 나눌 수 있음.
+									아카이빙 위치가 프라이머리, 스탠바이 모두에게 공유되는 경우와 스탠바이만 접근가능한 걍우.
+									두 경우 모두 archive_mode를 always로 설정하여 아커이빙을 하지만 공유되는 경우에 아카이빙을 하기 전
+									동일한 파일명이 있는지, 동일한 파일명의 파일이 동일한 컨텐츠를 가지고있는지 등을 archive_command,
+									archive_library 에서 홛인하여 덮어쓰지 않도록 해야함. 아카이빙 위치에 대해 race condition도 발생하지 않도록 해야함.
+
+                            ㄴ ??? 고가용성용으로 standby설정시, 유저를 primary와 동일하게? 나중에 pruimary역할을 할거ㅏㄹ?
+
+
+                        </pre>
+                        ㄴ ??? logical replication
+                            ㄴ 한 db서버의 데이터 수정의 stream을 다른 db서버로 보내는 기능?
+                            ㄴ ??? postgresql의 logical replication?
+                                ㄴ WAL record로부터 논리적 데이터 수정의 stream을 생성.
+                                ㄴ 테이블별 데이터 변경사항에 대한 복제 가능하다함.
+                                ㄴ 자신의 변경사항을 다른곳으로 전달하는 db서버가 다른 서버의 변경사항을 구독할 수도 있다.
+                                    따라서 양방향으로 replication이 가능하다?
+                        ㄴ ??? 트리거 기반 primary-standby replication
+                            ㄴ 데이터 수정 쿼리를 primary서버에 전달 후, 데이터 변경사항을 비동기로(드물게 동기로) standby서버로 전달.
+                                standby서버는 primary서버가 실행 중에도 쿼리에 응답할 수 있다?
+                            ㄴ ??? ~~~
+                            ㄴ ??? 솔루션 ) Slony-I
+                        ㄴ SQL-based replication Middleware
+                            ㄴ 어떤 프로그램이 모든 sql query를 인터셉트 후, 이를 관련 db서버들로 전달하는 방식.
+                            ㄴ 각 db서버들은 독립적으로 실행되고, read-write 쿼리는 모든 서버로 전달되어 모두 동일한 변경사항을 반영하도록.
+                                read-only쿼리는 한 서버에만 전달되어 부하를 분산.
+                            ㄴ ~~~ ???
+                            ㄴ ex )  Pgpoll-2, Continuent Tungsten
+                        ㄴ asynchronous multimaster replication
+                            ㄴ
+                        ㄴ synchronous multimaster replication
+
+                </pre>
+
+                ㄴ 무제 )
+                    ㅡ ~~~
+                    ㅡ 외부 접속 허용
+                        ㄴ
+                    ㅡ 유저 검색
+                        ㄴ select * from PG_USER;
+                        ㄴ \du
+                    ㅡ 유저 생성
+                        ㄴ create user (*user명*) (*옵션들*)
+                        ㄴ ex ) create user bbdlab SUPERUSER;
+                        ㄴ 옵션 )
+                            ㄴ ~~~
+                    ㅡ db 생성
+                        ㄴ create database (*db명*) (*옵션들*);
+                        ㄴ ex ) create database bbdlab OWNER bbdlab;
+                        ㄴ 옵션 )
+                            ㄴ OWNER : db의 소유자 지정. 해당 db에 대해 여러 권한을 가짐.
+                    ㅡ db 삭제
+                        ㄴ drop database (*db명*);
+                    ㅡ talbe 목록
+                        ㄴ
+                    ㅡ table 생성
+                        ㄴ create table (*table명*) (
+                                (*컬럼명1*) (*타입*) (*설정들*),
+                                (*컬럼명2*) (*타입*) (*설정들*),
+                                ~~~
+                            );
+                    ㄴ insert on conflict
+                        ㄴ 형식 )
+                        ㄴ ex )
+                            insert into stock_social_content
+                                (created_at, updated_at, social_type, date, url, title, content, source, stock_id)
+                            values ('2023-04-18 16:40:43.541000', '2023-04-18 16:40:43.541000', 'news', '2023-01-01', 'url2',
+                                '''삼성 이름값에도''…삼성FN리츠, 상장 첫 날 공모가 밑돌아[시그널]', 'content', 'sometrend', 'A000040')
+                            on conflict(stock_id, url) do update set title='title2', content='content5' where stock_social_content.source='sometrend'
+
+                            insert into deepq_news_reaction
+                                (created_at, updated_at,  social_keyword_id, source, date, title, press, link)
+                            values ('2023-04-18 16:40:43.541000', '2023-04-18 16:40:43.541000', 4403, 'daum_news', '2022-08-20',
+                                '[재송]19일 장 마감 후 주요 종목 뉴스', '이데일리', 'https://news.v.daum.net/v/20220820060020698' )
+                            on conflict on constraint deepq_news_reaction_unique do update set title='[재송]19일 장 마감 후 주요 종목 뉴스3'
+
+                        ㄴ insert 연산시 unique 또는 다른 제약조건 위반 발생시 수행할 작업을 명시하는 옵션.
+                        ㄴ 각각의 row들에 대해 insert를 수행하거나, conflict_target에 명시된 조건 위반시, 'conflict_action'에 명시된 작업 수행.
+                        ㄴ 'on conflict do nothing'은 아무 것도 하지 않음.
+                        ㄴ 'on conflict do update'는 insert하려는 해당 row와 제약조건 충돌을 일으키는 이미 존재하는 row를 update함.
+                        ㄴ ??? conflict_target에는 'on constraint'를 붙여 제약조건명이나 괄호로 unique나 exclude 제약조건을 이루는 컬럼명을
+                            나열해야 동작하는 듯하다. 안그럼 오류.
+                        ㄴ do update시 where은 당연히, update대상인 row에 대해 판별하여 참인 경우에만 update하는거고.
 
                 ㅡ dump <button>more</button>
                 <pre>
-                    ㄴ dump
+                    ㄴ dump+
                         ㄴ pg_dump -U (*db소유자*) (*db명*) > (*dump파일명*)
                             ㄴ ex ) pg_dump -U test postgres > postgres_DB_NAME_bak.sql
                             ㄴ 옵션 )
@@ -11870,227 +13089,692 @@
 
 		</pre>
 
-		깃<button>더보기</button>
+		version control<button>more</button>
 		<pre>
-			ㅇ  버전관리 시스템( VCS, Version Control System )
-				ㅡ 로컬 버전관리 : 말그대로 로컬컴퓨터 내에서 버전을 데이터베이스로서 관리하고 원하는 버전에 checkout하는 방식.
-				ㅡ 중앙 집중식 버전관리(CVCS) : 중앙 서버에 버전db를 올려놓고 여러컴퓨터가 그걸받아서checkout하는 방식. 중앙서버에 문제가
-												생기면 문제가 크다.
-				ㅡ 분산 버전 관리시스템(DVCS) : 마지막 버전정보를 checkout하는게 아니라 지금까지의 버전정보인 히스토리와 저장소 전체를
-												복제한다. 따라서 서버가 다운되더라도 클라이언트가 복제한 정보 아무거나로 복원이 가능하다.
+			ㄴ ~~~
+			ㄴ merge 알고리즘
+				ㄴ three-way merge
+					ㄴ 2개의 버전(A, B)과 이 둘의 공통 조상 버전(C)를 찾는다.
+						이 세 버전 중, 2개의 버전에서만 동일한 부분을 찾는다. 즉, A,C는 같은데 B는 다른 부분 등.
+						이러한 경우는 해당 부분에 한해선 버전이 2가지 있다고 할 수 있다. 2개끼리 같은 버전과 나머지 하나 버전.
+						해당 부분의 이 2가지 버전 중, 공통 조상 버전(C)가 속한 버전을 버리고 나머지 하나를 merge결과로 선택한다.
+						(가령, 특정 부분에 대해 A,B가 내용이 같고 C만 다르다면, A,B의 내용이 채택,
+						A,C가 내용이 같고 B가 다르다면, B의 내용이 채택)
+						A,B,C 모두 다르다면, '충돌'로 간주.
+					ㄴ ??? 러프한 알고리즘에 속하지만, 공통 조상을 하나만 요구하기 때문에 자주 사용된다함?
+					ㄴ ??? 텍스트나 구조화된 tree에 적용 가능하다?
+			ㄴ 깃<button>더보기</button>
+			<pre>
+				ㅇ  버전관리 시스템( VCS, Version Control System )
+					ㄴ 파일의 변화를 기록하고 있다가, 이후 원하는 시점의 버전을 불러올 수 있게 해주는 프로그램.
+						ㄴ 아주 단순하게는, 일자별로 폴더명을 설정하고 각 폴더에 해당 일자의 파일을 저장한 뒤, 나중에 특정 일자에 저장된 파일을
+							불러오는식.
+					ㄴ 종류 )
+						ㄴ 로컬 버전관리 : 말그대로 로컬컴퓨터 내에서 버전을 데이터베이스로서 관리하고 원하는 버전에 checkout하는 방식.
+						ㄴ 중앙 집중식 버전관리(CVCS) : 중앙 서버에 버전db를 올려놓고 여러컴퓨터가 그걸받아서checkout하는 방식. 중앙서버에 문제가
+														생기면 문제가 크다.
+						ㄴ 분산 버전 관리시스템(DVCS) : 마지막 버전정보를 checkout하는게 아니라 지금까지의 버전정보인 히스토리와 저장소 전체를
+														복제한다. 따라서 서버가 다운되더라도 클라이언트가 복제한 정보 아무거나로 복원이 가능하다.
 
-			ㅇ 깃 개요
-				ㅡ 깃은 다른 버전관리시스템과 달리 데이터를 파일시스템의 스냅샷의 연속으로 취급한다. 파일이 달라지지않으면 저장하지않고
-					링크만걸어둔다.때문에 크기가 작다.
-			ㅇ 특징
-				ㅡ깃은 대부분의 명령과 기능이 로컬에서 이루어지기대문에 네트워크의 영향을 별로 받지 않는다.
-				ㅡ 깃은 체크섬이라는 무결성체크용 기술을 사용한다고함.(뭔진 잘모름)
-				ㅡ 깃에선 데이터를 삭제하거나 되돌리는건 없다. '추가'만 할뿐.
+				ㅇ 깃 개요
+					ㅡ 깃은 다른 버전관리시스템과 달리 데이터를 파일시스템의 스냅샷의 연속으로 취급한다. 파일이 달라지지않으면 저장하지않고
+						링크만걸어둔다.때문에 크기가 작다.
+				ㅇ 특징
+					ㅡ깃은 대부분의 명령과 기능이 로컬에서 이루어지기대문에 네트워크의 영향을 별로 받지 않는다.
+					ㅡ 깃은 체크섬이라는 무결성체크용 기술을 사용한다고함.(뭔진 잘모름)
+					ㅡ 깃에선 데이터를 삭제하거나 되돌리는건 없다. '추가'만 할뿐.
 
-			ㅇ 깃의 구조
-				ㅡhttps://git-scm.com/book/en/v2/images/areas.png
-					ㄴ working directory : 로컬에서 작업하는 해당 폴더를 의미하는 듯하다.
-					ㄴ staging area : .git안에서 추상적?으로 존재하는 영역? 이폴더안에 깃의 규칙에 맞게 내용이 저장된다.
-										working directory를 git init으로 설정하면 생기는 숨겨진 폴더 .git이 생성된다.
-					ㄴ .git directory : 마찬가지로 .git폴더 안에서 저장되는 듯하다.
-				ㅡ 깃에서 파일은 몇가지 상태로 존재한다.
-					ㄴ committed : 데이터가 로컬db에 저장됨.
-					ㄴ modified : 수정된파일이 아직 커밋되지않음.
-					ㄴ staged : 수정된파일이 곧 커밋될것이라고 표현한 상태.
-					ㄴ tracked : 스냅샷에 포함되었던 파일.
-					ㄴ tracked는 unmodified, modified, staged로 나뉠수있다. 그 외에는 모두 untracked.
-					ㄴ 파일의 상태확인은 git status 명령사용. -s또는 --short옵션을 붙일수 있다.
-				ㅡ working directory에서 수정하면 modified상태. 이를 stage하여 staging area에 올려 커밋할 스냅샷을만들면 그게
-					staged. 이를 커밋하여 영구적인 스냅샷을 git directory에 만들면 그게 commited상태.
-				ㅡ git status : 폴더 안의 파일들의 상태를 나타난다.
+				ㄴ 체크섬
+					ㄴ 깃에서 사용하는 일종의 키값으로. SHA-1이라는 해쉬데이터이다.
+					ㄴ  모든 데이터를 이 체크섬값으로 식별한다.
+					ㄴ  거의 온세상에서 유일한값이라하며 데이터의 고유값으로 쓰인다.
+					ㄴ ex ) 8a8363d93e61185f6df18ed61321626be514c7f4 =>보통 이렇게 생긴 40자짜리 문자열값들이다.
+					ㄴ  이 체크섬값을 사용할때는 앞의 7자리만 사용하여도 된다. ex) git show 8a8363d
+					ㄴ ??태그를 체크아웃할수도 있으며 이럴경우 detached HEAD상태가 되어 문제가생길수도있으니 주의(detached HEAD는
+						나중에알아봐)
 
-			ㅇ 깃 최초설정하기
-				ㅡ git config
-					ㅡ git config --global user.name (*이름*)
-					ㅡ git config --global user.email (*이메일*)
-					ㅡ 깃을 저장할대 누가 해당내용을 업데이트했는지를 나타내주는 정보이다. 컴퓨터에서 한번만 설정한다하고
-						이렇게 설정하고 원격저장소에 저장하면 이 user정보로 기록이 뜨는듯하다.
-				ㅡ.....
+				ㅇ 깃의 구조
+					ㅡhttps://git-scm.com/book/en/v2/images/areas.png
+						<img src="image/git_기본동작.png" height="300px"/>
+						ㄴ working directory : 로컬에서 작업하는 해당 폴더를 의미하는 듯하다.
+						ㄴ staging area : .git안에서 추상적?으로 존재하는 영역? 이폴더안에 깃의 규칙에 맞게 내용이 저장된다.
+											working directory를 git init으로 설정하면 생기는 숨겨진 폴더 .git이 생성된다.
+						ㄴ .git directory : 마찬가지로 .git폴더 안에서 저장되는 듯하다.
+					ㅡ 깃에서 파일은 몇가지 상태로 존재한다.
+						ㄴ committed : 데이터가 로컬db에 저장됨.
+						ㄴ modified : 수정된파일이 아직 커밋되지않음.
+						ㄴ staged : 수정된파일이 곧 커밋될것이라고 표현한 상태.
+						ㄴ tracked : 스냅샷에 포함되었던 파일.
+						ㄴ tracked는 unmodified, modified, staged로 나뉠수있다. 그 외에는 모두 untracked.
+						ㄴ 파일의 상태확인은 git status 명령사용. -s또는 --short옵션을 붙일수 있다.
+					ㅡ working directory에서 수정하면 modified상태. 이를 stage하여 staging area에 올려 커밋할 스냅샷을만들면 그게
+						staged. 이를 커밋하여 영구적인 스냅샷을 git directory에 만들면 그게 commited상태.
+					ㅡ git status : 폴더 안의 파일들의 상태를 나타난다.
 
-			ㅇ 깃 저장소
-				ㅡ 깃저장소란
-					ㄴ 말그대로 저장소인데, 파일을 변경이력별로 구분하여 저장함.
-					ㄴ 로컬저장소와 원격저장소로 나뉨. 전자는 내pc에서만 저장되는 개인용, 후자는 서버에서 모두와 공유하는 저장소.
-				ㅡ 로컬 저장소 만들기
-					1. 기존 디렉토리를 깃 저장소로 만들기
-						ㅡ 해당 폴더 위치로 이동하여 'git init'명령을 실행한다.
-						ㅡ 해당폴더는 깃저장소가 되며, 이곳에서 stage, commit등을 할수 있다.
-					2. 기존 저장소 clone하기
-						ㅡ git clone (*url*) (*폴더이름*) 을 하게되면 url에 있는 저장소의 내용을 히스토리까지 포함해서 전부 복사해
-							가져오며, 폴더이름을 쓰지않을수도있다.
-				ㅡ 원격 저장소 명령어
-					ㄴgit remote : 현재 프로젝트에 지정된 리모트저장소를 확인
-					ㄴgit remote add (*원격저장소단축이름*) (*url*) : 현재 프로젝트에 url에 해당하느 ㄴ원격 저장소를 추가한다.
-					ㄴgit remote -v : 현재프로젝트에 원격저장소의 단축이름과 url을 볼 수있다.
-					ㄴgit clone을 하면 다운을받은 해당 url이 원격저장소 'origin'으로 자동등록이된다. (origin은 그냥처음에 자동으로
-						기본적으로부여되는 원격저장소를 가리키는 자동지정이름)
-					ㄴgit remote show (*저장소이름*) : 원격저장소 정보확인.
-					ㄴgit remote reaname (*현재원격저장소이름*) (*바꿀이름*):이름바꾸기
-					ㄴgit remote remove 또는 git remote rm : 삭제
-			ㅇ 인덱스
-				ㅡ 작업트리 : 흔히말하는 폴더를 말함.
-				ㅡ 인덱스 : 작업트리에서 저장소에 저장하기 전, 사이에잇는 공간을말함.
-				ㅡ 원격저장소 부분을 HEAD라고한다.
-				ㅡ 저장소에 등록하기위해서는 먼저 인덱스에 등록을 해야하며, 이과정을 '스테이징(stage)'이라함. 이를통해 저장소에 올릴것들을 선택할수있음.
-				ㅡ 방법) git add (*파일*)명령어로 인덱스에 추가.
+				ㄴ 깃에서 파일의 상태
+					ㄴ 종류 )
+						ㄴ Untracked
+							ㄴ 깃에서 관리하고 있지 않는 상태.
+						ㄴ Tracked
+							ㄴ 깃에서 관리 중인 상태.
+							ㄴ 하위 상태
+								ㄴ Unmodified
+									ㄴ 변경사항이 없는 상태.
+								ㄴ Modified
+									ㄴ 변경사항이 있는 상태.
+								ㄴ Staged
+									ㄴ ???
+					ㄴ 명령어 git status
+						ㄴ 깃 리포지토리 내의 파일들의 상태 정보 출력.
 
-			ㅇ 파일 수정 삭제
-				ㅡ git diff : staged가 아닌 파일에서 수정된것이있으면 비교해볼수있다.
-				ㅡ git rm : 워킹디렉토리의 파일을 삭제하고 이내용을 staging해줒는 것까지 실행하는 명령. 이후 커밋을 해야
-								삭제내역이 적용되어 영구적으로 untracked, 지워진다. rm명령을쓰지않고 윈도우상에서 파일삭제만하면
-								staing은 따로해야한다.
-				ㅡ git mv (*파일이름*) (*바꿀 파일이름*) : 파일이름변경.
+				ㅇ 커밋
+					ㅡ 어떤순간의 작업공간의 상태를 저장하는것. 작업공간 안에 있는 모든 파일과 파일의 데이터를 사진 찍듯이 복사해서 저장소에 보존합니다. 즉 커
+						밋은 작	업공간의 어떤 시점의 스냅샷(버전)이라고 할 수 있습니다.
+						(동사) '커밋한다'는 말은 커밋을 추가한다는 뜻입니다. 즉 현재 작업공간의 상태를 커밋으로 만들어서 저장소에 저장한다는 의미입니다.
+					ㅡ커밋의 대략적 구조
+						커밋이란 git commit 명령어로 저장소에 올리는 작업공간의 하나의 변경된 상태입니다. 하나의 커밋이 더해질 때는 이전 커밋에서 변경된 사항만 추가하면 될
+						것입니다. 이 때문에 커밋은 서로 연결된 체인 구조를 형성합니다. 이 구조에서는 예컨대 이전 커밋이 훼손되면 그 이후 커밋도 망가집니다.
+					ㄴ 커밋 메세지
+						ㄴ 커밋은 이력을남기는 중요한작업이기때문에 커밋버튼을누를때는 커밋메세지를 필수로입력해야함.
+						ㄴ 커밋메세지는 명료하고이해하기쉽게적어 다른이들에게도 쉽게하여야함. 권장형식이있음.
+							1번째 줄 : 커밋 내의 변경 내용을 요약
+							2번째 줄 : 빈 칸
+							3번째 줄 : 변경한 이유
+					ㅡ 커밋되는건 항상 add로 추가된 staged 파일들이라는것 명심.
+					ㅡ 명령어)
+						ㄴ git commit
+						ㄴ 옵션
+							ㄴ -a : staging area에 넣지않아도 tracked파일들이 커밋된다.
+							ㄴ --amend
+								ㄴ branch 맨 마지막 커밋을 수정.
+								ㄴ ???
 
-			ㅇ 커밋
-				ㅡ 어떤순간의 작업공간의 상태를 저장하는것. 작업공간 안에 있는 모든 파일	과 파일의 데이터를 사진 찍듯이 복사해서 저장소에 보존합니다. 즉 커
-					밋은 작	업공간의 어떤 시점의 스냅샷이라고 할 수 있습니다.
-					(동사) '커밋한다'는 말은 커밋을 추가한다는 뜻입니다. 즉 현재 작업공간의 상태를 커밋으로 만들어서 저장소에 저장한다는 의미입니다.
-				ㅡ커밋의 대략적 구조
-					커밋이란 git commit 명령어로 저장소에 올리는 작업공간의 하나의 변경된 상태입니다. 하나의 커밋이 더해질 때는 이전 커밋에서 변경된 사항만 추가하면 될
-					것입니다. 이 때문에 커밋은 서로 연결된 체인 구조를 형성합니다. 이 구조에서는 예컨대 이전 커밋이 훼손되면 그 이후 커밋도 망가집니다.
-				ㅡ 커밋은 이력을남기는 중요한작업이기때문에 커밋버튼을누를때는 커밋메세지를 필수로입력해야함.
-				ㅡ커밋메세지는 명료하고이해하기쉽게적어 다른이들에게도 쉽게하여야함. 권장형식이있음.
-					1번째 줄 : 커밋 내의 변경 내용을 요약
-					2번째 줄 : 빈 칸
-					3번째 줄 : 변경한 이유
-				ㅡ 커밋되는건 항상 add로 추가된 staged 파일들이라는것 명심.
-				ㅡ 명령어)
-					ㄴ git commit
-					ㄴ 옵션
-						ㄴ -a : staging area에 넣지않아도 tracked파일들이 커밋된다.
+				ㄴ ??? ref
+					ㄴ 'refs/~~~/~~~' 형태의 '이름'. 이 이름은 하나의 object name 또는 또다른 ref를 가리킴.
+						ㄴ ex ) refs/heads/master, refs/remotes/nonameRemote
+						ㄴ ??? 깃에서의 object에 대한 참조를 나타내는 이름같다?
+					ㄴ 이게 git의 reference들의 풀네임이고 보통 이름을 간추려서 부름.
+						ex ) 'refs/tags/v3' 을 tag 'v3',  'refs/heads/branch1'을 브랜치 'branch1' 등.
+					ㄴ object name. 즉, SHA-1로 만들어진 object의 이름을 의미.
+					ㄴ 실제로 working directory의 .git/refs 위치에 저장된다. 각 이름에 해당하는 파일 안에는 object name이 들어있다.
+					ㄴ ??? 이름에서 refs 바로 하위의 계층은 타입에 따라 정해져 있는 듯? heads, remotes, tags 등.
+						heads는 branch의 head object들이, remotes는 리포지토리의 remote들이 ..
+					ㄴ 'refs/~~~' 형태가 아닌 ref
+						ㄴ HEAD
+							ㄴ 현재 branch.
+							ㄴ working tree가 이 HEAD에 의해 결정됨.
+							ㄴ 리포지토리의 'head' 중 하나.
+						ㄴ ORIG_HEAD
+							ㄴ merge, reset 등과 같이 현재 커밋을 check out하는 연산 수행시, 연산 수행 이전의 HEAD값을 나타냄.
+								이를 통해 원래 HEAD로 쉽게 되돌아올 수 있다.
+						ㄴ FETCH_HEAD
+							ㄴ git fetch 명령어를 통해 가장 마지막으로 remote로부터 fetch된 브랜치를 가리킴.
+						ㄴ MERGE_HEAD
+						ㄴ REBASE_HEAD
 
+				ㄴ '...' 연산자?
+					ㄴ (*커밋1*)...(*커밋2*)
+					ㄴ (*커밋1*) 과 (*커밋2*) 중 하나와만 연결점이 있는 커밋 목록을 모두 선택?
+						둘 다 연결되면 선택 안됨?
+					ㄴ 가령,
+						커밋1 -> 커밋2 -> 커밋3(branch1) -> 커밋4 -> 커밋5
+						일때,
+						git log branch1...커밋5   를 하면,
+						커밋1,2,3은 branch1과 커밋5 모두 연결되어 있으므로 결과 로그목록에 없고,
+						커밋4,5는 커밋5하고만 연결되어 있으므로 결과 로그 목록에 뜬다.
 
-			ㅇ 히스토리보기
-				ㅡ git log 명령어를 통해 커밋 히스토리를 볼수있다.(맨위가 가장최근)
-				ㅡ옵션들)
-					ㄴ -p 	: 각 커밋의 diff결과출력
-					ㄴ -(*숫자*) : 보여줄 커밋개수를 정함.
-					ㄴ --stat 	: 통계를 보여줌. 어떤파일이, 얼마나많이변경됐는지,얼마나 많은줄을 추가했는지 등. 요약정보는 맨
-								아래에보여줌.
-					ㄴ --pretty: 출력결과를 보여줄때 기본형식이외에 다양한 형식으로 결과를 보여주는 기능
-					ㄴ -S	: 코드에서 추가되거나 제거된내용중 특정텍스트가 포함되어있는지를 검색. 옵션뒤에 그냥 검색할 텍스트를
-							추가하면된다.
-					ㄴ git log -- (*url*) : url에 해당하는 파일의 로그를 볼수있다.
-
-			ㅇ되돌리기
-				ㅡgit commit --amend : 마지막 커밋을 현재staging area내용으로 대체한다. 가장최근의 커밋을 덮어씌우는것.
-				ㅡgit reset HEAD (*파일*) : add된 파일을 staging area에서 꺼낸다.
-				ㅡgit checkout -- (*파일*) : modified된파일을 되돌린다.
-
-			ㅇ 태그
-				ㅡ커밋 버전에 말그대로 태그를 붙이는것.
-				ㅡ태그에는 두종류가있다. 일반태그와 주석태그. 주석태그에는 만든사람이름, 이메일, 태그만든날짜, 태그메세지를 저장.
-				ㅡ 태그 등록하기
-					ㄴgit tag (*태그이름*) : 현재 HEAD의 커밋에 태그를 등록.
-					ㄴgit tag -a (*태그이름*) : 주석달린 태그를 현재HEAD부분의 커밋에 등록.
-					ㄴgit tag나 git tag -a 명령어 끝에 현재HEAD 커밋이 아닌 과거 커밋의 체크섬값을 추가해주면 해당 커밋에 대하여
-						태그를 등록할수 있다.
-				ㅡgit tag : 태그목록보기
-				ㅡgit push명령은 태그를 원격서버에 올리지않는다. 따로 push해주어야한다. git push (*원격이름*) (*태그이름*)을
-					통해 push할수있다. git push --tags를 하면 원격서버에 없는 태그를 모두 push할수있다.
-
-			*체크섬
-				ㅡ깃에서 사용하는 일종의 키값으로. SHA-1이라는 해쉬데이터이다.
-				ㅡ깃은 모든 데이터를 이 체크섬값으로 식별한다.
-				ㅡ체크섬값은 거의 온세상에서 유일한값이라하며 데이터의 고유값으로 쓰인다.
-				ㅡex) 8a8363d93e61185f6df18ed61321626be514c7f4 =>보통 이렇게 생긴 40자짜리 문자열값들이다.
-				ㅡ명령어상에서 이 체크섬값을 사용할때는 앞의 7자리만 사용하여도 된다. ex) git show 8a8363d
-				ㅡ??태그를 체크아웃할수도 있으며 이럴경우 detached HEAD상태가 되어 문제가생길수도있으니 주의(detached HEAD는
-					나중에알아봐)
-
-			ㅇ 복제(clone)
-				ㅡ 원격저장소의 내ㅛㅇㅇ을 그대로 다운로드하여 저장
-
-			ㅇ 푸쉬(push)
-				ㅡ 로컬저장소의 변경이력을 원격저장소에 올리는것.
-				ㅡ 원격저장소의내용이 로컬저장소와 같아지게됨.
-				ㅡ 원격서버의 주소를 설정해주어야한다.
-					git remote add origin (*원격서버주소*)
-				ㅡgit push (*원격이름*) (*브랜치이름*) : push명령어
-				ㅡ원격저장소에 쓰기권한이 있어야하며,
-				ㅡ원격저장소에 push하였을때 충돌내용이 없어야한다. 예를들면, 내가 원격저장소를 clone을 하고 다른사람이
-					그 원격에push하고 나중에  내가 push를 하려고했을때 다른사람이 이미원격에 push해놓은 내용과 내가
-					push하려는 내용에서 겹치거나 달라서 충돌이생기면 push할수없다.
-
-			ㅇ fetch
-				ㅡ 원격저장소로부터 로컬저장소와 다른 변경이력들을 다운받는다.
-				ㅡ로컬에 이름없는 브랜치를 만들어 이곳으로 내용을 가져오며, FETCH_HEAD라는 이름으로 checkout가능하다.
-				ㅡmerge는 따로 진행하여 내용을 합쳐야한다.
-
-			ㅇ 풀(pull)
-				ㅡ 원격저장소의 내용을 내 로컬저장소에 업데이트하는것.
-				ㅡ fetch와 다르게 원격으로부터 내용을 받아와 merge까지 자동으로 진행한다.
-				ㅡ 하지만 충돌의 문제때문에 보통 fetch후, 수동으로 merge하는것이 권장된다고한다.
-
-			ㅇ branch
-				ㅡ 여러가지 독립된 작업을 수행하기위해 버전의 가지를 만드는것.
-				ㅡ 후에 병합된다.
-				ㅡ 가장 중심이되는 가지를 master가지라고 하며, 특정가시로 checkout하여 이동하지않는한, 모든작업은 이 master가지에서 진행된다.
-				ㅡ 브랜치 종류)
-					ㄴ 통합브랜치 : 언제든 배포가능한 상태인 버전을 말한다. 안정성이 중요하며 보통 master브랜치를 통합브랜치로서 사용한다.
-					ㄴ 토픽 브랜치 : 기능추가나 버그수정같은 작업을 위한 브랜치로 작업을 완료하면 통합브랜치로 병합된다.
-				ㅡ 브랜치 전환)
-					ㄴ checkout 명령어를 사용하며, 전환되면 해당브랜치의 마지막 커밋내용이 출력된다.
-					ㄴ stash???????????????
-				*HEAD)
-					ㅡ 현재 브랜치의 선두(가장 최신부분)부분을 의미하며, 기본적으로 master의 선두부분의미.
-					ㅡ HEAD를 이동하면 브랜치를 변경할수있음.
-					ㅡ HEAD ~3 => HEAD로부터 3세대 앞의 커밋을 가리킴
-
-			ㅇ 병합(merge)
-				ㅡ 내가 pull을 한뒤 다른사람에 의해 원격저장소가 업데이트되면, 이후 내가 하는 push는 거부된다. 원격저장소에서 다른변경점이 생겼기때문.
-				이럴때 원격저장소의 내용을 내 로컬저장소에 갱신하는데 이를 병합이라함.
-
-			ㅇ 충돌
-				ㅡ 위의 병합의 경우를 예를들면, 갱신을 해줄때 같은부분에 변경점이있어 어느것으로 업데이트를해야할지 충돌이일어나는 상황을말함.
-				ㅡ 이 충돌의 경우, 직접 그부분을 수정해주어야함.
-
-			ㅇ git의 객체
-				ㅡ 깃은 저장하는 데이터를 객체의 형식으로 저장하고관리한다.
-				ㅡ 객체의 종류는 blob, tree, commit, tag이다.
-				ㅡ blob(binary large object) 객체)
-					ㄴ저장하는 파일에대한 객체로, 내용자체'만' 저장된다. 파일 이름이나 형식등은 저장되지않는다.
-					ㄴ텍스트, 이미지,음악, 단순 이진파일등 다양한형식의 파일이 저장될수있다.
-					ㄴ체크섬에서 앞두자리를뺀 38자리가 blob의 이름에 해당한다. 앞두자리는 blob파일이 속한 디렉토리의 이름이다.
-				ㅡ tree객체)
-					ㄴ 디렉토리를 담당하는 객체로, 현재디렉토리에 있는 blob객체, 하위 디렉토리의 tree객체를 담고있다.
+				ㄴ branch<button>more</button>
+				<pre>
 					ㄴ
-				ㅡcommit객체)
-					ㄴ커밋 히스토리를 저장하는 객체이다.
-					ㄴ현재 프로젝트의 최상위 tree객체, 이전 커밋객체, 누가언제 커밋하였는지에 대한 정보, 커밋메세지 등을 저장한다.
-				ㅡtag 객체)
-					ㄴ커밋에 태그를 달면 생성되는 태그정보에 관한 객체.
-					ㄴ 일반태그는 커밋에대한 포인터로 동작하고, 주석태그는 작성자,이메일, 날짜, 메세지를 저장할수있다.
+					ㄴ history상의 특정 지점에서 시작하는 '가지'를 생성.
+						그 가지로 switch하면 해당 가지로 이동되고 이후 커밋 등의 동작을 하면, 가지 시작지점부터 별개의 분기로 history가 쌓여나간다.
+						후에 merge 등을 통하여 가지를 합치는 등으로 사용됨.
+					ㄴ remote-tracking branch
+						ㄴ 초기 git clone이나 remote 추가 후 git fetch 등을 하여 원격으로 리포지토리를 받아오면,
+							해당 리포지토리의 master branch뿐 아니라 그 외 branch들도 받아와지며, 추적 관리된다.(fetch, pull, push 등을 하면
+							이러한 branch들을 remote-tracking branch라 하는 듯.
+						ㄴ 로컬에서 임의로 수정할 수 없고 fetch 등을 할때 tracking 중인 해당 remote 상태와 맞게 업데이트됨.
+					ㄴ head
+						ㄴ 각 branch의 맨 끝 커밋의 ref
+						ㄴ branch를 가리키는게 일반적으로 branch의 head를 가리키는 것.
+					ㄴ 관련 명령어
+						ㄴ git branch <button>more</button>
+						<pre>
+							ㄴ 명령어 형식 목록.
+								ㄴ git branch<button>more</button>
+								<pre>
+									ㄴ git branch [--color[=< when>] | --no-color] [--show-current]
+											[-v [--abbrev=< n> | --no-abbrev]]
+											[--column[=< options>] | --no-column] [--sort=< key>]
+											[--merged [< commit>]] [--no-merged [< commit>]]
+											[--contains [< commit>]] [--no-contains [< commit>]]
+											[--points-at < object>] [--format=< format>]
+											[(-r | --remotes) | (-a | --all)]
+											[--list] [< pattern>… ]
+									ㄴ 브랜치 리스팅. 현재 브랜치는 앞에 별표.
+									ㄴ 디폴트로 --list 옵션이 생략된것.
+									ㄴ --remotes / -r 옵션 ) remote들의 branch가 리스팅.
+									ㄴ --all / -a 옵션 ) remote와 local branch 모두 리스팅.
+									ㄴ --contains (*commit*), --no-contains (*commit*)
+										ㄴ (*commit*)이 포함된 브랜치만 보여줌.
+										ㄴ --no-contains는 그반대.
+										ㄴ (*commit*)없을시 디폴트는 HEAD.
+									ㄴ --merged (*commit*), --no-merged (*commit*)
+										ㄴ (*commit*)으로 merge된 브랜치 리스팅.
+										ㄴ --no-merged는 그반대.
+										ㄴ (*commit*) 없을시 디폴트는 HEAD.
+								</pre>
+								ㄴ git branch (*브랜치명*)<button>more</button>
+								<pre>
+									ㄴ git branch [--track[=(direct|inherit)] | --no-track] [-f]
+										[--recurse-submodules] < branchname> [< start-point>]
+									ㄴ (*브랜치면*)의 브랜치 추가. 이 브랜치는 현재 브랜치 head가 가리키는 지점과 동일한 지점을 가리킴.
+										즉, 현재 branch의 마지막 커밋을 가리킴. 즉 현재 HEAD를 가리키는 브랜치 생성.
+										이 브랜치에서 새 커밋시 별도 분기된 브랜치로 히스토리가 쌓여나가게됨.
+									ㄴ < start-point> 명시시 이 지점을 가리키는 브랜치 생성. 커밋 등.
+									ㄴ 새 브랜치를 생성만 할뿐, switch하지는 않음.
+									ㄴ --track
+										ㄴ git branch (*브랜치명*) --track (*remote*)
+										ㄴ 생성하는 브랜치에 대해 'branch.(*브랜치명*).remote', 'branch.(*브랜치명*).merge' 설정값을 설정.
+											ㄴ 해당 설정값 설명은 git config의 설정변수 참조.
+										ㄴ ??? --track=direct? --track=inherit? branch.autoSetupMerge?
+								</pre>
+								ㄴ git branch --move (*기존브랜치명*) (*새브랜치명*)<button>more</button>
+								<pre>
+									ㄴ git branch (-m | -M) [< oldbranch>] < newbranch>
+									ㄴ oldbranch에 해당하는 브랜치의 이름을 newbranch로 변경.
+									ㄴ reflog에 oldbranch에 해당하는 로그가 있는 경우, 이 log의 브랜치명이 newbranch로 변경되며
+										이 rename 동작에 대한 로그가 reflog에 추가된다.
+										ㄴ ex )
+											git branch -m branch3-1 branch3-1_new
+											git reflog --all
 
-			ㅡ모든 객체는 객체 헤더와 내용으로 이루어져있다. 헤더는 객체의 종류와 크기르 나타내는 문자열, 내용은 각 객체타입별로
-				담는 내용들.
-			ㅡgit Alias라고 사용자정의 명령문 만들기같은게 ㅇ있다.
-			...
+											// 아래 로그의 'branch3-1_new'는 원래 'branch3-1'. 변경된 것.
+											95f7f6c8f (branch3-1_new) refs/heads/branch3-1_new@{0}: Branch: renamed refs/heads/branch3-1 to refs/heads/branch3-1_new
+											~~~
+											// 왼쪽 소괄호 안의 ref명들은 rename에 따라 변경되나, 우측 내용부분은 변경되지 않는듯함.
+											95f7f6c8f (branch3-1_new) HEAD@{1}: checkout: moving from branch3 to branch3-1
+											~~~
+									ㄴ -M 옵션은 --move --force.
+								</pre>
+								ㄴ git branch --copy (*기존브랜치명*) (*새브랜치명*)<button>more</button>
+								<pre>
+									ㄴ git branch (-c | -C) [< oldbranch>] < newbranch>
+									ㄴ git branch -m ~~~ 과 거의 유사한데, rename을 하는게 아닌 복사.
+										즉, oldbranch에 해당하는 브랜치를 복사하여 newbranch이름의 브랜치 생성.
+										reflog도 복사하여 생성.
+									ㄴ -C 옵션은 --copy --force.
+								</pre>
+								ㄴ git branch --delete (*브랜치명*)<button>more</button>
+								<pre>
+									ㄴ git branch (-d | -D) [-r] < branchname>…
+									ㄴ (*브랜치명*)에 해당하는 브랜치 삭제. reflog도 같이 삭제.
+									ㄴ 삭제하려는 브랜치는 upstream으로 merge되어있어야함.
+									ㄴ -D 옵션은, --delete --force 와 동일.
+									ㄴ -r과 함께 사용시, remote-tracking branch를 삭제.
+										이 동작은 remote에 더이상 해당 branch가 없거나 fetch시 해당 브랜치를 fetch해오지 않도록 설정된 경우에만 의미가 있다.
+										안그럼 fetch시 어차피 다시 로드해와 생길테니까.
+								</pre>
+						</pre>
+						ㄴ git switch<button>more</button>
+						<pre>
+							ㄴ 특정 branch로 전환.
+							ㄴ working tree와 index가 해당 branch에 맞게 업데이트됨.
+							ㄴ 전환 후, 새롭게 추가된 commit은 해당 branch 끝에 추가되게됨.
+							ㄴ 명령어 형식<button>more</button>
+							<pre>
+								ㄴ git switch [< options>] [--no-guess] < branch>
+									ㄴ 현재 브랜치의 로컬에 커밋되지 않은 변경사항이 있는 경우, switch 실패.
+										--discard-changes 옵션을 붙여 커밋되지 않은 변경사항을 버리도록 할 수 있음.
+								ㄴ git switch [< options>] --detach [< start-point>]
+									ㄴ (*start-point*)으로 HEAD를 이동. (*start-point*)은 tag명, commit object명 등이 가능.
+									ㄴ 'HEAD'가 'detacked' 되었다라고함.
+								ㄴ git switch [< options>] (-c|-C) (*새 브랜치명*) [(*start-point*)]
+									ㄴ --create / -c, --force-create / -C
+										ㄴ (*새브랜치명*) 이름을 가지고 ( (*start-point*)가 명시된 경우) (*start-point*)에서 시작하는
+											브랜치를 만들고 해당 브랜치로 switch.
+									ㄴ ex )
+										// 인자로 넘긴 커밋에서부터 시작하는 'newInSwitch'란 이름의 브랜치 생성 후 switch.
+										git switch --create newInSwitch dac777a10c99b30496230d8a5988a5faffe87016
+								ㄴ git switch [< options>] --orphan < new-branch>
+							</pre>
+						</pre>
+						ㄴ git reset
+							ㄴ
+				</pre>
 
-			ㅇ도움말 보기
-			ㅡ git help (*명령어*) : 해당 명령어에대한 도움말이 나옴.
-			ㅡ git (*명령어*) -h : 해당 명령어에 줄수있는 옵션에대한 정보나옴.
-			ㅡ git (*명령어*) --help : 위하고똑같은데 인터넷상으로 더 자세하게
+				ㄴ merge
+					ㄴ 명령어 형식 목록
+						ㄴ git merge (*커밋*)
+							ㄴ git merge [-n] [--stat] [--no-commit] [--squash] [--[no-]edit]
+								[--no-verify] [-s < strategy>] [-X < strategy-option>] [-S[< keyid>]]
+								[--[no-]allow-unrelated-histories]
+								[--[no-]rerere-autoupdate] [-m < msg>] [-F < file>]
+								[--into-name < branch>] [< commit>… ]
+							ㄴ ??? 현재 브랜치가 분기된 이후 (*커밋*)의 변경사항을 현재 브랜치의 변경사항과 합치고
+								현재 브랜치에 새 커밋을 추가한 뒤 그 합친 결과를 write
+							ㄴ 합친 결과물이 현재 브랜치의 working tree에 덮어씌워진다.
+								ㄴ 하여 수정했으나 커밋하지 않은 변경사항들이 있고, 이 파일이 merge과정에서 영향을 받는 파일인 경우,
+									merge가 진행되지 않고 오류뜸.
+									ㄴ ex )
+										error: Your local changes to the following files would be overwritten by checkout:
+												test.txt
+										Please commit your changes or stash them before you switch branches.
+										Aborting
+							ㄴ 결합 과정에서 충돌 발생시, merge가 되다만 결과물이 되고, 없을시 완전히 merge된 결과물이 된다.
+								ㄴ ex )
+									충돌 발생시,
+									Auto-merging test.txt
+									CONFLICT (content): Merge conflict in test.txt
+									Automatic merge failed; fix conflicts and then commit the result.
+								ㄴ 충돌 발생시, 해당 파일 충돌지점에 표시가 되고, 수동으로 원하는대로 수정한 뒤, 해당 파일을 index에 추가 후 커밋하면
+									merge 완료.
+									ㄴ 충돌 수정 후, 해당 파일 커밋시, 커밋메세지는 merge 충돌에 대한 수정이라고 디폴트로 채워져 있음.
+								ㄴ 충돌 발생시, 해당 충돌을 수정하여 merge를 완료할때까지 commit 불가.
+							ㄴ git pull 명령어에서 자동으로 실행된다?
+						ㄴ git merge --abort
+							ㄴ git merge (--continue | --abort | --quit)
+							ㄴ git merge (*커밋*) 의 결과가 충돌발생인 경우에만 실행가능.
+							ㄴ merge 작업을 중단하고 merge 시작 전 상태로 되돌림.
+							ㄴ 되돌리려는 merge 시작 전 상태에 커밋하지 않은 변경사항이 있는 경우, 해당 내용을 제대로 되돌리지 못할수도 있다함.
 
-			ㅇ 로그인 토큰 방식
-				ㅡ 2020년부터 비밀번호를 사용한 로그인이 제한되고 토큰 방식을 이용해야 한다함.
-				ㅡ 깃헙 로그인 후, settings > Developer settings > Personal access tokens 에서
-					토큰을 생성해주고 git push등을 할때 원래 비번 입력하는 곳에 토큰을 입력해 주면 된다.
-				ㅡ 토큰 생성시 여러 설정이 가능하고, 생성된 토큰을 따로 저장해 두어야 한다.
-			ㅇ 기존 리포지토리 history 포함하여 새 리포지토리로 복사
-				ㅡ git clone --mirror (*복사하려는 리포지토리 주소*)
-				ㅡ 클론한 폴더에 생긴 .git파일명 변경
-					mv (*생긴 리포지토리*).git .git
-				ㅡ 복사하여 저장할 리포지토리 연결
-					git remote set-url origin (*새 리포지토리 주소*)
-				ㅡ 새 리포지토리에 push
-					git push --mirror
+				ㄴ fetch<button>more</button>
+				<pre>
+					ㄴ 모든 remote-tracking branch를 해당 remote 리포지토리의 최신버전으로 업데이트.
+						업데이트만 할 뿐, 현재 리포지토리에 아무런 변경을 하지 않음.
+				</pre>
 
+				ㄴ remote <button>more</button>
+				<pre>
+					ㄴ git remote add (*remote명*) (*git repo url*)
+						ㄴ 현재 리포지토리에 remote를 추가. (*git repo url*)에 해당하는 외부 리포지토리를 (*remote명*)으로 등록.
+							등록한 remote로 fetch, push 등 여러 동작 하게됨.
+				</pre>
+
+				ㄴ tag <button>more</button>
+				<pre>
+					ㄴ 'refs/tags/' 하위의 'ref'. 가리키는 object의 타입은 뭐든 상관 없다.
+					ㄴ 관련 명령어
+						ㄴ git tag (*tag명*) (*커밋*)
+							ㄴ (*커밋*)을 가리키는 (*tag명*)의 tag 생성.
+						ㄴ tag -l : tag 목록 나열.
+				</pre>
+
+				ㄴ log
+					ㄴ git log
+						ㄴ 리포지토리의 커밋 목록을 보여주는 명령어.
+
+				ㄴ diff
+
+				ㄴ 깃의 object <button>more</button>
+				<pre>
+					ㄴ 깃에선 모든 object의 이름은 object의 컨텐츠에 대해 SHA-1 해쉬값을 취하여 만들어진다.
+						ㄴ 컨텐츠가 완전히 일치하지 않으면 해쉬값이 다를 수밖에 없고 이를 이용하여 깃은 두 객체 사이의 차이점이 존재하는지 여부를
+							object의 이름만 보고 빠르게 판단 가능하다.
+						ㄴ 리포지토리가 달라도 컨텐츠만 같으면 같은 이름을 가진다.
+						ㄴ ??? 컨텐츠의 해시값과 이름이 일치하는지를 확인하여 오류여부를 확인한다?
+							ㄴ ??? 어떤 오류? 어떻게 쓰이는지?
+					ㄴ blob object
+						ㄴ 바이너리 파일을 의미.
+							별다른 추가적인 속성을 가지지 않고 파일 자체를 나타낸다.
+						ㄴ 파일의 컨텐츠에 의해 정의됨. 따라서 내용물이 동일하면 같은blob 객체를 사용하게됨. 즉 두 파일에 대한 blob object의
+							해시 키 값이 동일.
+							ㄴ 디렉토리 위치와 상관 없음. 파일명과도 상관 없음.
+
+					ㄴ tree object
+						ㄴ 아주 간추려서 말하면, working directory 안에서 특정한 하나의 디렉토리와 그 컨텐츠를 나타내는 객체.
+							하위에 해당 디렉토리의 구성 목록을 담고 있음.
+							구성 목록의 타입은 'blob', 'tree' 중 하나.
+								blob은 일반 파일을 의미, tree는 또다른 sub directory를 의미.
+								즉, 하위에 또다른 tree object를 가져 계층 구조 형성.
+						ㄴ 각 blob, tree는 다른 git의 object들과 마찬가지로 그 내용물의 SHA-1 hash 값이 이름이 됨.
+							ㄴ 컨텐츠의 해쉬값으로 이름이 결정되므로, 내용물이 완전히 동일해야만(하위 서브디렉토리의 내용물들까지도)
+								동일한 이름을 가질 수 있음.
+						ㄴ git show, git ls-tree 명령어로 tree object의 상세 정보 확인 가능.
+
+					ㄴ commit object
+						ㄴ tree object의 계층 구조를 수정본들의 '비순환 방향 그래프'로 포함시킴.
+						ㄴ 구성 )
+							ㄴ tree
+								ㄴ 특정 시점에서의 디렉토리 계층 구조를 나타내는 단 하나의 tree object의 SHA-1 이름.
+							ㄴ parent
+								ㄴ 부모 commit 이름. 즉, 히스토리상 바로 직전 단계의 커밋 번호의 SHA-1 이름.
+								ㄴ 대부분의 경우 하나, merge commit의 경우 여러개, 최초 커밋의 경우 없으며, 이렇게 parent가 없는 커밋을
+									'root commit'이라함.
+							ㄴ author : ??? 해당 변경사항에 대한 책임이 있는 사람?
+							ㄴ committer
+								ㄴ 커밋 작성자.
+								ㄴ ??? 대부분의 경우, author가 committer이다? 수정은 A가 하고 커밋만 B가 한 경우 등에서나 다름?
+							ㄴ comment : 변경사항에 대한 설명.
+						ㄴ git show 명령어로 상세정보 확인 가능.
+							ㄴ ex ) git show -s --pretty=raw 2be7fcb476
+
+								commit 2be7fcb4764f2dbcee52635b91fedb1b3dcf7ab4
+								tree fb3a8bdd0ceddd019615af4d57a53f43d8cee2bf
+								parent 257a84d9d02e90447b149af58b271c19405edb6a
+								author Dave Watson < dwatson@mimvista.com> 1187576872 -0400
+								committer Junio C Hamano < gitster@pobox.com> 1187591163 -0700
+
+									Fix misspelling of 'suppress' in docs
+
+									Signed-off-by: Junio C Hamano < gitster@pobox.com>
+						ㄴ 변경점은 parent commit의 tree와 현재 commit의 tree object의 컨텐츠를 비교하여 식별된다.
+					ㄴ tag object
+						ㄴ 특정 object를 지칭하는 object.
+						ㄴ object, object type, tag name, 태그 작성자 이름, 메지시로 구성.
+						ㄴ ex ) git cat-file tag v1.5.0  // 태그 상세 정보 조회 명령어.
+					ㄴ trust ???
+				</pre>
+
+				ㄴ low level git 명령어.
+					ㄴ 깃 명령어들은 내부적으로 'low-level git 명령어'들을 사용하는 shell script로 구현된다함.
+					ㄴ 일반적인 경우 당연히 쓸일 없지만, 예외적인 케이스나 내부 동작 이해의 관점에서 알면 좋다.
+
+				ㄴ bisect <button>more</button>
+				<pre>
+					ㄴ ??? git에서 제공하는 history상 버그커밋 찾는 툴?
+						ㄴ 어떤 지점이 'bad'상태이고 (버그가 존재하고), 어떤 지점이 'good'상태인지(버그가 없는지) 입력하면,
+							그 사이의 히스토리 커밋들을 이등분하여 이진탐색 비슷하게 커밋을 제안하며 해당 커밋으로 detach 해준다.
+					ㄴ ex )
+						git bisect start  // bisect 시작함.
+						git bisect good (*정상 지점*)  // 어디가 정상지점인지 명시.
+						git bisect bad (*버그존재하는 지점*)  // 어디가 버그존재하는지점인지 명시.
+
+						// 대충 다음같은 출력나오며 해당 커밋으로 detach.
+						Bisecting: a merge base must be tested
+						[378aa01995d7ac051248b36e47a2ca2419a34b3a] in branch3
+
+						// 제시받은 커밋이 good인지 bad인지 명시.
+						git bisect bad
+						// 다시 다음 커밋 제시.
+
+						// 이를 반복.. 마지막에 어떤커밋이 문제인지를 나타내는 문장 설명 출력. 형식 다양?
+						The merge base 378aa01995d7ac051248b36e47a2ca2419a34b3a is bad.
+						This means the bug has been fixed between 378aa01995d7ac051248b36e47a2ca2419a34b3a and [dac777a10c99b30496230d8a5988a5faffe87016].
+
+						git bisect reset  // bisect 종료. bisect 시작 전에 있던 branch로 switch.
+
+					ㄴ ~~~
+
+				</pre>
+
+				ㄴ 깃 명령어 <button>more</button>
+				<pre>
+					ㄴ git help (*명령어*)
+						또는 git (*명령어*) --help  (명령어에 --help option을 붙이는 형식)
+						ㄴ (*명령어*)에 대한 도움말.
+					ㄴ git init<button>more</button>
+					<pre>
+						ㄴ 새 깃 리포지토리 생성 및 기존 리포지토리 재초기화.
+							ㄴ 즉, .git 폴더와 하위 파일들 생성?
+							ㄴ
+
+					</pre>
+					ㄴ git log <button>more</button>
+					<pre>
+						ㄴ 변경 이력 확인 명령어.
+						ㄴ 옵션 )
+							ㄴ ex ) git log -p
+								ㄴ 어느 부분이 변경되었는지 상세하게 볼 수 있음.
+							ㄴ -p 	: 각 커밋의 diff결과출력
+							ㄴ -(*숫자*) : 보여줄 커밋개수를 정함.
+							ㄴ --stat 	: 통계를 보여줌. 어떤파일이, 얼마나많이변경됐는지,얼마나 많은줄을 추가했는지 등. 요약정보는 맨
+										아래에보여줌.
+							ㄴ --pretty: 출력결과를 보여줄때 기본형식이외에 다양한 형식으로 결과를 보여주는 기능
+							ㄴ -S	: 코드에서 추가되거나 제거된내용중 특정텍스트가 포함되어있는지를 검색. 옵션뒤에 그냥 검색할 텍스트를
+									추가하면된다.
+							ㄴ git log -- (*url*) : url에 해당하는 파일의 로그를 볼수있다.
+
+					</pre>
+					ㄴ git branch <button>more</button>
+					<pre>
+						ㄴ 깃 브랜치 관련 명령어.
+						ㄴ ex )
+							ㄴ git branch
+								ㄴ 브랜치 목록 확인.
+								ㄴ '*' 표시있는게 현재 브랜치.
+							ㄴ git branch (*branch명*)
+								ㄴ 브랜치 생성.
+							ㄴ git branch -d (*브래치명*)
+								ㄴ 해당 브랜치 삭제.
+
+					</pre>
+					ㄴ git diff
+						ㄴ 파일의 상태별 어느 부분이 다른지 알려줌.
+						ㄴ 디폴트로, 리포지토리의 working directory와 staging area의 파일 비교.
+						ㄴ --staged 옵션 추가시, staging area와 커밋된 내용 비교.
+					ㄴ git reflog <button>more</button>
+					<pre>
+						ㄴ reference log. 브랜치head 또는 다른 reference가 로컬 리포지토리에서 업데이트되면 reference log가 기록되며,
+							이 명령어로 그 로그목록을 볼 수 있다.
+						ㄴ ex )
+							C:\Users\tony7\gitTest>git reflog --all
+							6a7a9f39c (HEAD -> remoteTestBranch, branch3) HEAD@{0}: checkout: moving from branch3 to remoteTestBranch
+							6a7a9f39c (HEAD -> remoteTestBranch, branch3) refs/heads/remoteTestBranch@{0}: branch: Created from branch3
+							b8615b85b (nonameRemote/main) refs/remotes/nonameRemote/main@{0}: fetch nonameRemote: storing head
+							6a7a9f39c (HEAD -> remoteTestBranch, branch3) refs/heads/branch3@{0}: commit (merge): Merge branch '3-2' into branch3
+							6a7a9f39c (HEAD -> remoteTestBranch, branch3) HEAD@{1}: commit (merge): Merge branch '3-2' into branch307cf5c6e8 HEAD@{2}: checkout: moving from 3-2 to branch3
+							0a1f155af HEAD@{3}: checkout: moving from master to 3-2
+							95f7f6c8f (branch3-1_new_copy, branch3-1_new) refs/heads/branch3-1_new_copy@{0}: Branch: copied refs/heads/branch3-1_new to refs/heads/branch3-1_new_copy
+							95f7f6c8f (branch3-1_new_copy, branch3-1_new) refs/heads/branch3-1_new@{0}: Branch: renamed refs/heads/branch3-1 to refs/heads/branch3-1_new
+							95f7f6c8f (branch3-1_new_copy, branch3-1_new) refs/heads/branch3-1_new_copy@{1}: Branch: renamed refs/heads/branch3-1 to refs/heads/branch3-1_new
+							ㄴ 'HEAD@{3}' : HEAD가 3번 업데이트되기 전에 가리키던 곳을 의미. 'HEAD@{0}'이면 당연히 현재 HEAD 위치.
+					</pre>
+					ㄴ git remove
+					ㄴ git name-rev
+					ㄴ git describe
+					ㄴ git merge-base
+					ㄴ git status
+
+					ㄴ ~~~
+
+				</pre>
+
+				ㅇ 깃 설정하기 <button>more</button>
+				<pre>
+					ㅡ 세가지 파일에 의해 설정된다.
+						ㄴ /etc/gitconfig
+							ㄴ 깃 전체, 최상위 설정 파일. 모든 사용자, 모든 저장소에 적용.
+							ㄴ 위치
+								ㄴ 윈도우에선 보통 C://Program Files/Git/etc/gitconfig
+							ㄴ git config 명령어에 --system 옵션으로 설정 가능.
+						ㄴ .gitconfig (또는 .config/git/config)
+							ㄴ 특정 사용자 적용 설정 파일.
+							ㄴ 위치
+								ㄴ 윈도우 ) 보통 유저 홈 디렉토리. C://Users/(*유저*)
+							ㄴ git config 명령어에 --global 옵션으로 설정 가능.
+						ㄴ .git/config
+							ㄴ 특정 깃 디렉토리에 위치.
+							ㄴ 해당 저장소에만 적용.
+							ㄴ git config 명령어에 --local 옵션으로 설정 가능. (디폴트)
+					ㅡ 적용 우선순위
+						ㄴ .git/config > .gitconfig > /etc/gitconfig
+
+					ㅡ git config file <button>more</button>
+					<pre>
+						ㄴ ~~~
+
+
+					</pre>
+
+					ㅡ 설정 변수 <button>more</button>
+						<pre>
+							ㄴ ~~~
+							ㄴ branch.autoSetupMerge
+								ㄴ ~~~ ???
+							ㄴ branch.(*브랜치명*).remote
+								ㄴ 해당 브랜치가 디폴트로 fetch, push할 remote를 설정.
+									ㄴ 'git push' 등과 같이 따로 remote를 명시하지 않으면서 별다른 관련 설정이 없는 경우 등.
+									ㄴ 즉, git push, git fetch를 하면 별다른 설정이 없는한, 여기 설정된 remote로부터 fetch, push를 수행.
+								ㄴ 디폴트를 설정하는 것이지 따로 명시하면 해당 remote로도 fetch, push 가능???
+								ㄴ 'remote-tracking branch'가 되는건 아님. 그냥 연결된 remote값이 설정된 것뿐.
+								ㄴ push는 'remote.pushDefault' 설정에 의해 override 될 수 있음.
+								ㄴ 현재 브랜치에 대해 'branch.(*브랜치명*).pushRemote' 설정에 의해 override 될 수 있음.
+							ㄴ branch.(*브랜치명*).merge
+								ㄴ ~~~???
+
+						</pre>
+
+					ㅡ git config
+						ㄴ 깃 설정 명령어.
+						ㅡ git config --global user.name (*이름*)
+						ㅡ git config --global user.email (*이메일*)
+						ㅡ 깃을 저장할대 누가 해당내용을 업데이트했는지를 나타내주는 정보이다. 컴퓨터에서 한번만 설정한다하고
+							이렇게 설정하고 원격저장소에 저장하면 이 user정보로 기록이 뜨는듯하다.
+						ㄴ git config --list
+							ㄴ 설정된 옵션 목록 확인.
+					ㄴ .gitignore 파일
+						ㄴ 깃 저장소 내에서 무시할 파일에 대해 설정. Untracked조차 되지 않는다.
+						ㄴ 입력 형식 )
+							ㄴ 상세 ) https://git-scm.com/docs/gitignore
+							ㄴ 주석 : '#'으로 시작하는 라인. ex ) # 블라블라블라...
+							ㄴ 확장자 )
+								ㄴ ex ) *.a  // .a 확장자 무시.
+							ㄴ 디렉토리 )
+								ㄴ ex ) some_dir/  // some_dir 하위 모든 파일 무시.
+							ㄴ 경로 )
+								ㄴ ex ) /some_file  // 현재 디렉토리(/) 하위 some_file 무시.
+								ㄴ ex ) some_dir/*.txt  // some_dir 하위 .txt확장자 파일 무시. 바로 하위의 파일만 해당.
+								ㄴ ex ) some_dir/**/*.txt  // some_dir 하위 모든 .txt확장자 파일 무시.
+
+				</pre>
+
+				ㅇ 깃 저장소
+					ㅡ 깃저장소란
+						ㄴ 말그대로 저장소인데, 파일을 변경이력별로 구분하여 저장함.
+						ㄴ 로컬저장소와 원격저장소로 나뉨. 전자는 내pc에서만 저장되는 개인용, 후자는 서버에서 모두와 공유하는 저장소.
+					ㅡ 로컬 저장소 만들기
+						1. 기존 디렉토리를 깃 저장소로 만들기
+							ㅡ 해당 폴더 위치로 이동하여 'git init'명령을 실행한다.
+							ㅡ 해당폴더는 깃저장소가 되며, 이곳에서 stage, commit등을 할수 있다.
+						2. 기존 저장소 clone하기
+							ㅡ git clone (*url*) (*폴더이름*) 을 하게되면 url에 있는 저장소의 내용을 히스토리까지 포함해서 전부 복사해
+								가져오며, 폴더이름을 쓰지않을수도있다.
+					ㅡ 원격 저장소 명령어
+						ㄴgit remote : 현재 프로젝트에 지정된 리모트저장소를 확인
+						ㄴgit remote add (*원격저장소단축이름*) (*url*) : 현재 프로젝트에 url에 해당하느 ㄴ원격 저장소를 추가한다.
+						ㄴgit remote -v : 현재프로젝트에 원격저장소의 단축이름과 url을 볼 수있다.
+						ㄴgit clone을 하면 다운을받은 해당 url이 원격저장소 'origin'으로 자동등록이된다. (origin은 그냥처음에 자동으로
+							기본적으로부여되는 원격저장소를 가리키는 자동지정이름)
+						ㄴgit remote show (*저장소이름*) : 원격저장소 정보확인.
+						ㄴgit remote reaname (*현재원격저장소이름*) (*바꿀이름*):이름바꾸기
+						ㄴgit remote remove 또는 git remote rm : 삭제
+
+				ㅇ 인덱스
+					ㅡ 작업트리 : 흔히말하는 폴더를 말함.
+					ㅡ 인덱스 : 작업트리에서 저장소에 저장하기 전, 사이에잇는 공간을말함.
+					ㅡ 원격저장소 부분을 HEAD라고한다.
+					ㅡ 저장소에 등록하기위해서는 먼저 인덱스에 등록을 해야하며, 이과정을 '스테이징(stage)'이라함. 이를통해 저장소에 올릴것들을 선택할수있음.
+					ㅡ 방법) git add (*파일*)명령어로 인덱스에 추가.
+
+				ㅇ 파일 수정 삭제
+					ㅡ git diff : staged가 아닌 파일에서 수정된것이있으면 비교해볼수있다.
+					ㅡ git rm : 워킹디렉토리의 파일을 삭제하고 이내용을 staging해줒는 것까지 실행하는 명령. 이후 커밋을 해야
+									삭제내역이 적용되어 영구적으로 untracked, 지워진다. rm명령을쓰지않고 윈도우상에서 파일삭제만하면
+									staing은 따로해야한다.
+					ㅡ git mv (*파일이름*) (*바꿀 파일이름*) : 파일이름변경.
+
+				ㅇ되돌리기
+					ㅡgit commit --amend : 마지막 커밋을 현재staging area내용으로 대체한다. 가장최근의 커밋을 덮어씌우는것.
+					ㅡgit reset HEAD (*파일*) : add된 파일을 staging area에서 꺼낸다.
+					ㅡgit checkout -- (*파일*) : modified된파일을 되돌린다.
+
+				ㅇ 태그
+					ㅡ커밋 버전에 말그대로 태그를 붙이는것.
+					ㅡ태그에는 두종류가있다. 일반태그와 주석태그. 주석태그에는 만든사람이름, 이메일, 태그만든날짜, 태그메세지를 저장.
+					ㅡ 태그 등록하기
+						ㄴgit tag (*태그이름*) : 현재 HEAD의 커밋에 태그를 등록.
+						ㄴgit tag -a (*태그이름*) : 주석달린 태그를 현재HEAD부분의 커밋에 등록.
+						ㄴgit tag나 git tag -a 명령어 끝에 현재HEAD 커밋이 아닌 과거 커밋의 체크섬값을 추가해주면 해당 커밋에 대하여
+							태그를 등록할수 있다.
+					ㅡgit tag : 태그목록보기
+					ㅡgit push명령은 태그를 원격서버에 올리지않는다. 따로 push해주어야한다. git push (*원격이름*) (*태그이름*)을
+						통해 push할수있다. git push --tags를 하면 원격서버에 없는 태그를 모두 push할수있다.
+
+				ㅇ 복제(clone)
+					ㅡ 원격저장소의 내ㅛㅇㅇ을 그대로 다운로드하여 저장
+
+				ㅇ 푸쉬(push)
+					ㅡ 로컬저장소의 변경이력을 원격저장소에 올리는것.
+					ㅡ 원격저장소의내용이 로컬저장소와 같아지게됨.
+					ㅡ 원격서버의 주소를 설정해주어야한다.
+						git remote add origin (*원격서버주소*)
+					ㅡgit push (*원격이름*) (*브랜치이름*) : push명령어
+					ㅡ원격저장소에 쓰기권한이 있어야하며,
+					ㅡ원격저장소에 push하였을때 충돌내용이 없어야한다. 예를들면, 내가 원격저장소를 clone을 하고 다른사람이
+						그 원격에push하고 나중에  내가 push를 하려고했을때 다른사람이 이미원격에 push해놓은 내용과 내가
+						push하려는 내용에서 겹치거나 달라서 충돌이생기면 push할수없다.
+
+				ㅇ fetch
+					ㅡ 원격저장소로부터 로컬저장소와 다른 변경이력들을 다운받는다.
+					ㅡ로컬에 이름없는 브랜치를 만들어 이곳으로 내용을 가져오며, FETCH_HEAD라는 이름으로 checkout가능하다.
+					ㅡmerge는 따로 진행하여 내용을 합쳐야한다.
+
+				ㅇ 풀(pull)
+					ㅡ 원격저장소의 내용을 내 로컬저장소에 업데이트하는것.
+					ㅡ fetch와 다르게 원격으로부터 내용을 받아와 merge까지 자동으로 진행한다.
+					ㅡ 하지만 충돌의 문제때문에 보통 fetch후, 수동으로 merge하는것이 권장된다고한다.
+
+				ㅇ branch
+					ㅡ 여러가지 독립된 작업을 수행하기위해 버전의 가지를 만드는것.
+					ㅡ 후에 병합된다.
+					ㅡ 가장 중심이되는 가지를 master가지라고 하며, 특정가시로 checkout하여 이동하지않는한, 모든작업은 이 master가지에서 진행된다.
+					ㅡ 브랜치 종류)
+						ㄴ 통합브랜치 : 언제든 배포가능한 상태인 버전을 말한다. 안정성이 중요하며 보통 master브랜치를 통합브랜치로서 사용한다.
+						ㄴ 토픽 브랜치 : 기능추가나 버그수정같은 작업을 위한 브랜치로 작업을 완료하면 통합브랜치로 병합된다.
+					ㅡ 브랜치 전환)
+						ㄴ checkout 명령어를 사용하며, 전환되면 해당브랜치의 마지막 커밋내용이 출력된다.
+						ㄴ stash???????????????
+					*HEAD)
+						ㅡ 현재 브랜치의 선두(가장 최신부분)부분을 의미하며, 기본적으로 master의 선두부분의미.
+						ㅡ HEAD를 이동하면 브랜치를 변경할수있음.
+						ㅡ HEAD ~3 => HEAD로부터 3세대 앞의 커밋을 가리킴
+
+				ㅇ 병합(merge)
+					ㅡ 내가 pull을 한뒤 다른사람에 의해 원격저장소가 업데이트되면, 이후 내가 하는 push는 거부된다. 원격저장소에서 다른변경점이 생겼기때문.
+					이럴때 원격저장소의 내용을 내 로컬저장소에 갱신하는데 이를 병합이라함.
+
+				ㅇ 충돌
+					ㅡ 위의 병합의 경우를 예를들면, 갱신을 해줄때 같은부분에 변경점이있어 어느것으로 업데이트를해야할지 충돌이일어나는 상황을말함.
+					ㅡ 이 충돌의 경우, 직접 그부분을 수정해주어야함.
+
+				ㅇ git의 객체
+					ㅡ 깃은 저장하는 데이터를 객체의 형식으로 저장하고관리한다.
+					ㅡ 객체의 종류는 blob, tree, commit, tag이다.
+					ㅡ blob(binary large object) 객체)
+						ㄴ저장하는 파일에대한 객체로, 내용자체'만' 저장된다. 파일 이름이나 형식등은 저장되지않는다.
+						ㄴ텍스트, 이미지,음악, 단순 이진파일등 다양한형식의 파일이 저장될수있다.
+						ㄴ체크섬에서 앞두자리를뺀 38자리가 blob의 이름에 해당한다. 앞두자리는 blob파일이 속한 디렉토리의 이름이다.
+					ㅡ tree객체)
+						ㄴ 디렉토리를 담당하는 객체로, 현재디렉토리에 있는 blob객체, 하위 디렉토리의 tree객체를 담고있다.
+						ㄴ
+					ㅡcommit객체)
+						ㄴ커밋 히스토리를 저장하는 객체이다.
+						ㄴ현재 프로젝트의 최상위 tree객체, 이전 커밋객체, 누가언제 커밋하였는지에 대한 정보, 커밋메세지 등을 저장한다.
+					ㅡtag 객체)
+						ㄴ커밋에 태그를 달면 생성되는 태그정보에 관한 객체.
+						ㄴ 일반태그는 커밋에대한 포인터로 동작하고, 주석태그는 작성자,이메일, 날짜, 메세지를 저장할수있다.
+
+				ㅡ모든 객체는 객체 헤더와 내용으로 이루어져있다. 헤더는 객체의 종류와 크기르 나타내는 문자열, 내용은 각 객체타입별로
+					담는 내용들.
+				ㅡgit Alias라고 사용자정의 명령문 만들기같은게 ㅇ있다.
+				...
+
+				ㅇ 로그인 토큰 방식
+					ㅡ 2020년부터 비밀번호를 사용한 로그인이 제한되고 토큰 방식을 이용해야 한다함.
+					ㅡ 깃헙 로그인 후, settings > Developer settings > Personal access tokens 에서
+						토큰을 생성해주고 git push등을 할때 원래 비번 입력하는 곳에 토큰을 입력해 주면 된다.
+					ㅡ 토큰 생성시 여러 설정이 가능하고, 생성된 토큰을 따로 저장해 두어야 한다.
+				ㅇ 기존 리포지토리 history 포함하여 새 리포지토리로 복사
+					ㅡ git clone --mirror (*복사하려는 리포지토리 주소*)
+					ㅡ 클론한 폴더에 생긴 .git파일명 변경
+						mv (*생긴 리포지토리*).git .git
+					ㅡ 복사하여 저장할 리포지토리 연결
+						git remote set-url origin (*새 리포지토리 주소*)
+					ㅡ 새 리포지토리에 push
+						git push --mirror
+
+			</pre>
 		</pre>
 
 		Ajax<button>더보기</button>
@@ -12543,7 +14227,16 @@
 						ㄴ int compareTo(String str) : 두 문자열 비교. 동일하면 0반환, 아니면 ~~~~~~~~~~~
 						ㄴ public static String valueOf( (*다른 자료형의 값*) ) : 인자로 int, float, boolean 등의 다른 자료형이 넘어오면
 							해당 값을 문자열로 변환하여 반환.
-
+				ㅡ 배열 )
+					ㄴ 자바에서 배열도 인스턴스이고 참조변수를 통해 접근된다.
+					ㄴ length라는 변수를 가지고있다.
+					ㄴ 생성과 초기화
+						int[] arr = new int[] {1,2,3}; 또는
+						int[] arr = {1,2,3};
+					ㄴ for-each문 )
+						ㄴ for ( (*각 요소를 나타낼 변수*) : (*반복의대상*) ){ ~~~ }	//(*각 요소를 나타낼 변수*)는 (*반복대상*)안의요소와 자료형이
+																				일치해야 한다.
+							ㄴ ex)	for( int e : arr ){System.out.println( e );}	//arr의 모든 요소에 대해 반복, 각 반복마다 요소는 e로 접근가능.
 				ㅡ 상속 )
 					ㄴ 부모 클래스의 멤버변수와 멤버메소드를 자식클래스도 가지도록하는 기능.
 					ㄴ 코드의 재사용성과 다형성을 지원한다.
@@ -12969,6 +14662,111 @@
 					ㄴ 더이상 참조되지 않는 객체인 경우, (즉, 특정 객체에 대한 참조값이 아무 변수에 할당되지 않는 상태이면)
 						'가비지 컬렉터'가 해당 객체를 삭제하여 차지하고 있던 메모리를 비운다.
 
+			ㅇ Annotation, 어노테이션
+				ㄴ 직접적인 코드상의 연산 작업이 없이, 프로그램에 대한 metadata를 제공하는 일종의 정해진 형식.
+				ㄴ 쓰임새
+					ㄴ 컴파일러에게 정보 제공
+					ㄴ 컴파일, 배포 시점에 소프트웨어 툴들이 어노테이션 정보를 이용해 코드, xml file 등을 생성할 수 있게함.
+					ㄴ 런타임시에 참고.
+				ㄴ 형식
+					ㄴ ex )
+						@Entity
+						@Author(
+							name="aaa", date="2023-01-01"
+						)
+					ㄴ 'sign character (@)'를 사용하여 이후의 내용이 어노테이션임을 컴파일러에게 알림.
+					ㄴ '@'바로 뒤에 어노테이션 이름.
+					ㄴ 이름이 있는/없는 인자를 가질 수 있음.
+					ㄴ 여러개의 어노테이션이 명시될 수 있다.
+					ㄴ Repeating annotation
+						ㄴ 같은 어노테이션이 여러번 명시된 경우의 어노테이션을 말함.
+				ㄴ 다른 어노테이션에 대한 어노테이션을 'meta-annotation'이라함.
+				ㄴ 어노테이션 타입은 java.lang, java.lang.annotation 패키지에 정의된 타입 중 하나이다.
+					ㄴ java.lang의 annotation
+						ㄴ @Deprecated
+							ㄴ 해당 요소가 deprecated되어 더이상 사용하면 안됨을 경고하는데 쓰이는 어노테이션.
+							ㄴ 해당 어노테이션이 선언된 요소 사용시 경고창이 뜸.
+						ㄴ @Override
+							ㄴ 컴파일러에게 해당 요소가 상위 클래스의 요소를 overide 한것임 알림.
+							ㄴ override하는 요소에 필수로 이 어노테이션을 선언해야 하는건 아니지만,
+								선언하면 적절한 override 실패시 컴파일러가 에러를 발생시켜 준다.
+						ㄴ @SuppressWarnings
+							ㄴ 컴파일러에게 특정 warning을 무시라하고 명시.
+							ㄴ ex )
+								@SuppressWarnings({"deprecation", "unchekced"})
+								void useDeprecatedMethod() {
+									// deprecation warning
+									// - suppressed
+									objectOne.deprecatedMethod();
+								}
+								ㄴ 'deprecation', 'unchecked'란 category의 컴파일 warning을 무시하라 명시.
+								* 컴파일러 warning은 특정 category에 속함. 자바 언어의 경우, 'deprecation', 'unchecked' category 존재.
+						ㄴ @SafeVarargs
+						ㄴ @FunctionalInterface
+					ㄴ java.lang.annotaion의 annotation의 'meta-annotation'
+						ㄴ 'meta-annotation'이란, 다른 annotation에 적용되는 annotation.
+						ㄴ @Retention
+							ㄴ annotation 선언시, 선언하는 annotation에 선언하면 적용.
+							ㄴ 해당 annotation을 source code, class file, runtime 시 중 어느 시점까지 유지시킬지 결정.
+							ㄴ 인자 )
+								ㄴ value )
+									ㄴ java.lang.annotation의 RetentionPolicy enum 값 중 하나 입력.
+									ㄴ SOURCE : 어노테이션을 소스코드 상에서만 유지시킴. 컴파일러가 컴파일하여 class파일 생성시
+										해당 어노테이션을 제거함.
+									ㄴ CLASS : 어노테이션을 class파일까지 유지시킴. 컴파일러가 class파일 생성시 어노테이션을 제거하지 않음.
+										JVM이 runtime시 제거함???
+									ㄴ RUNTIME : 어노테이션을 runtime시까지 유지시킴. 컴파일러가 class파일 생성시 어노테이션을 제거하지 않고
+										JVM이 runtime시 제거하지 않음.
+							ㄴ @Retention meta-annotation 자체가 선언되지 않았으면, 'CLASS'가 디폴트로 설정.
+						ㄴ @Documented
+							ㄴ
+
+				ㄴ 직접 정의도 가능하다.
+				ㄴ 선언에 사용 가능.
+					클래스, 함수, 변수에 대한 선언 등.
+					ㄴ java 8부턴 타입에도 사용 가능. (type annotation)
+						ㄴ ex )
+							new @Interned MyObject();
+
+							myString = (@NonNull String) str;
+
+							class UnmodifiableList< T> implements
+								@Readonly List<@Readonly T> { ... }
+
+							void monitorTemperature() throws
+								@Critical TemperatureException { ... }
+				ㄴ annotation 정의
+					ㄴ ex )
+						// 정의.
+						@interface ClassPreamble {
+						   String author();
+						   String date();
+						   int currentRevision() default 1;
+						   String lastModified() default "N/A";
+						   String lastModifiedBy() default "N/A";
+						   // Note use of array
+						   String[] reviewers();
+						}
+
+						// 사용..
+						@ClassPreamble (
+						   author = "John Doe",
+						   date = "3/17/2002",
+						   currentRevision = 6,
+						   lastModified = "4/12/2004",
+						   lastModifiedBy = "Jane Doe",
+						   // Note array notation
+						   reviewers = {"Alice", "Bob", "Cindy"}
+						)
+						public class Generation3List extends Generation2List {
+
+						// class code goes here
+
+						}
+					ㄴ @ 문자 뒤에 'interface'를 붙이는 형식으로 정의.
+					ㄴ body에는 어노테이션의 인자 정의.
+						ㄴ 디폴트값 설정 가능.
+
 			ㅇ 쓰레드와 동기화 <button>펼치기</button>
 			<pre>
 				ㄴ 쓰레드 기초
@@ -13079,6 +14877,7 @@
 								ㄴ signalAll : 모든 스레드를 깨운다.
 							ㄴ 나머지는 방법1과 같다.
 			</pre>
+
 			ㅇ 파일과 I/O 스트림 <button>펼치기</button>
 			<pre>
 				ㄴ 여기서 설명하는 주요 클래스들은 java.io 패키지에 들어있다.
@@ -13266,6 +15065,7 @@
 							ㄴ public File[] listFiles() : 디렉터리에 존재하는 파일과 디렉토리들 정보를 반환한다.
 					ㄴ 스트림 클래스들의 생성자 인자로 String을 직접입력하기보다 File인스턴스를 사용하면 유용하다.
 			</pre>
+
 			ㅇ 자바 정규식 <button>펼치기</button>
 			<pre>
 				ㅡ java.util.regex.Pattern을 이용하여 패턴을 확인한다.
@@ -13314,6 +15114,7 @@
 						ㄴ 주민번호 : \d{6} \- [1-4]\d{6}
 				</pre>
 			</pre>
+
 			ㅇ 명령어 'java'
 				ㅡ 자바 어플리케이션을 실행하는 명령어이다.
 				ㅡ public static void main(String[] args) 메소드가 있어야한다.
@@ -13896,7 +15697,17 @@
 											ㄴ 이렇게 boundary에 설정한 값으로 파라미터를 구분하여 패킷을 만든다.
 
 							</pre>
-
+                            ㄴ response header
+                                ㄴ ~~~
+                                ㄴ X-Frame-Options
+                                    ㄴ 브라우저가 response 페이지를 < frame>, < iframe>, < embed> html tag 안에서
+                                        렌더링해도 될지 말지를 명시하는 헤더.
+                                        값으로 'DENY', 'SAMEORIGIN' 가 있으며,
+                                        'DENY'이면, rseponse의 페이지를 < iframe> 등에서 렌더링을 금지,
+                                        'SAMEORIGIN'이면 origin이 같은 경우에만 허용.
+                                        브라우저가 이 response의 header를 읽고 렌더링하거나 말거나 하는 것이기 때문에
+                                        브라우저에서 이 'X-Frame-Options' 헤더 기능을 지원해야 동작한다.
+                                        사이트에 대한 'click-jacking' 공격 방지 등을 위해 사용된다.
 						</pre>
 						ㄴ TLS/SSL )<button>더보기</button>
 						<pre>
@@ -14206,13 +16017,17 @@
 					ㄴ ip주소들은 인터넷 도메인 이름과 매핑된다.
 					ㄴ 호스트에있는 프로세스는 다른 호스트에 있는 프로세스와 통신 할 수 있다.
 				ㅡ IP Address )
-					ㄴ unsigned 32 bit integer 값이다.
-					ㄴ 네트워크 프로그램들은 ip 주소를 'IP address structure'에 저장한다.
-						ㄴ 구조체에 저장하는 이유는 특별한게 없고 처음에 그렇게 만들었는데 바꾸기엔 너무 늦어서.
-					ㄴ 호스트마다 바이트 정렬 순서가 다를 수 있기 때문에 tcp/ip 프로토콜에서 '빅엔디안'으로 통신하도록 바이트정렬순서를 정의 .
-					ㄴ 유닉스에선 호스트용 바이트 정렬순서와 네트워크용을 상호 변환해주는 함수들을 제공한다.
-					ㄴ ip주소는 'dotted decimal notation'형태로 사람들에게 보여진다. ex) 128.2.194.242
-						ㄴ 이를 변환해주는 함수 역시 제공.
+                    ㄴ 개요 )
+                        ㄴ unsigned 32 bit integer 값이다.
+                        ㄴ 네트워크 프로그램들은 ip 주소를 'IP address structure'에 저장한다.
+                            ㄴ 구조체에 저장하는 이유는 특별한게 없고 처음에 그렇게 만들었는데 바꾸기엔 너무 늦어서.
+                        ㄴ 호스트마다 바이트 정렬 순서가 다를 수 있기 때문에 tcp/ip 프로토콜에서 '빅엔디안'으로 통신하도록 바이트정렬순서를 정의 .
+                        ㄴ 유닉스에선 호스트용 바이트 정렬순서와 네트워크용을 상호 변환해주는 함수들을 제공한다.
+                        ㄴ ip주소는 'dotted decimal notation'형태로 사람들에게 보여진다. ex) 128.2.194.242
+                            ㄴ 이를 변환해주는 함수 역시 제공.
+                    ㄴ 0.0.0.0
+                        ㄴ 따로 지정된 주소가 없음을 의미하는 주소.
+                        ㄴ '0.0.0.0:0'은 주소뿐 아니라 포트도 따로 지정된게 없음을 의미.
 				ㅡ Internet Domain Names )
 					ㄴ 사람들이 쓰기 쉽도록 ip주소와 이름을 매핑시켜주는것
 					ㄴ 계층적 형태이다.
@@ -16882,6 +18697,14 @@
                             Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
                             default         gateway         0.0.0.0         UG    100    0        0 em4  # 디폴트 게이트웨이???
                             192.168.0.0     0.0.0.0         255.255.255.0   U     100    0        0 em4
+                    ㅡ netstat
+                        ㄴ ~~~
+                        ㄴ output 요소
+                            ㄴ ~~~
+                            ㄴ local address
+                                ㄴ 소켓 연결에서 로컬 엔드포인트의 address:port.
+                            ㄴ foreign address
+                                ㄴ 소켓 연결에서 remote 엔드포인트의 address:port.
 
 				ㅇ rpm
 					ㅡ Redhat사에서 개발한 패키지 관리 프로그램.
@@ -17045,14 +18868,26 @@
 			ㅡ 방화벽이란?
 				ㄴ 네트워크상의 트레픽에 대해, 이를 모니터링하고 미리정해둔 규칙에 따라 제어하고 차단하는 시스템.
 				ㄴ 소프트웨어 또는 하드웨어 일 수 있다.
-			ㅡ 대칭키 암호화 : 하나의 키로 암호화와 복호화가 진행되고 이때의 키를 말한다.
-			ㅡ 비대칭키 암호화 )
-				ㄴ 대칭키와 다르게 두개의 키로 암호화, 복호화를 진행하는 방식에서 사용되는 키이다.
-				ㄴ 키 중에 하나로 암호화를 하면, 다른 하나로 복화하가 가능하고, 그 반대도 가능하다.
-				ㄴ 보통 키 중 하나는 여러 곳에 배포하고 다른 하나는 자신만 조심해서 가지고 있기 때문에 전자를 '공개키', 후자를 '개인키'라고 한다.
-					ㄴ 하여 비대칭키 암호화를 공개키 암호화 방식이라고도 한다.
-				ㄴ 공개키로 암호화를 진행하고 개인키로 복화를 한다.
-			ㅡ CORS(Cross-Origin Resource Sharing), SOP(Same-Origin Policy) )
+
+			ㅡ 암호화<buton>more</buton>
+			<pre>
+				ㄴ 일방향 암호화 )
+					ㄴ 암호화 후에, 복호화가 불가한 암호화 방식.
+					ㄴ Hash 암호화
+						ㄴ
+				ㄴ 양방향 암호화 )
+					ㄴ 암호화 후에, 복호화가 가능한 암호화 방식.
+					ㄴ 대칭키 암호화 : 하나의 키로 암호화와 복호화가 진행되고 이때의 키를 말한다.
+					ㄴ 비대칭키 암호화 (=공개키 암호화) )
+						ㄴ 대칭키와 다르게 두개의 키로 암호화, 복호화를 진행하는 방식에서 사용되는 키이다.
+						ㄴ 키 중에 하나로 암호화를 하면, 다른 하나로 복화하가 가능하고, 그 반대도 가능하다.
+						ㄴ 보통 키 중 하나는 여러 곳에 배포하고 다른 하나는 자신만 조심해서 가지고 있기 때문에 전자를 '공개키', 후자를 '개인키'라고 한다.
+							ㄴ 하여 비대칭키 암호화를 공개키 암호화 방식이라고도 한다.
+						ㄴ 공개키로 암호화를 진행하고 개인키로 복화를 한다.
+			</pre>
+
+			ㅡ CORS(Cross-Origin Resource Sharing), SOP(Same-Origin Policy) )<button>more</button>
+			<pre>
 				ㄴ SOP )<button>more</button>
 				<pre>
 					ㄴ 한 origin에서 나온 document, script, media file들이 다른 origin과 상호작용할 수 없도록 제약하는 정책.
@@ -17254,8 +19089,116 @@
 					ㄴ https://www.codecademy.com/article/what-is-cors
 					ㄴ https://www.packetlabs.net/cross-origin-resource-sharing-cors/
 					ㄴ https://fetch.spec.whatwg.org/#http-cors-protocol
+			</pre>
 
+			ㅡ 웹 보안<button>more</button>
+			<pre>
+				ㄴ ~~~
+				ㄴ 정형화된 이론이 있다기보다, 여러 공격 방법들이 있고 이들에 대해 각각 대응하는 모양새.
+					ㄴ 치명적이거나 많이 발생하고 당하는 공격들만 대응하거나 꼼꼼하게 모두 대응하거나.
+				ㄴ ~~~
+				ㄴ 취약점, 공격 방식 <button>more</button>
+				<pre>
+					ㄴ XSS ( Cross-site script )
+						ㄴ 사용자의 웹페이지에 자바스크립트 코드를 삽입하는 방법.
+							클라이언트로부터 인증 토큰이나 세션id 등을 탈취할 수 있음.
+						ㄴ ex )
+							ㄴ 게시물에 스크립트 코드를 작성하여 저장하고, 이 게시물 내용을 유저가 웹페이지에 띄울시 스크립트가 실행되는 방식.
+							ㄴ
+						ㄴ 대응 )
+							ㄴ
+					ㄴ CSRF (Cross-Site Request Forgery)
+						ㄴ
+						ㄴ 대응 )
+							ㄴ http Referer 체크
+								ㄴ http referer header를 이용하여 허용된 referer의 요청만 허가하여 막는 방법.
+								ㄴ http 변조를 통해 쉽게 뚫린다함.
+							ㄴ CSRF Token 체크
+								ㄴ
+							ㄴ CAPTCHA
+					ㄴ 인젝션, Injection
+						ㄴ SQL injection
+							ㄴ sql을 삽입하여 공격하는 방식.
+							ㄴ 유저로부터 입력받은 값을 sql에 그대로 사용시, 악의적 sql을 입력하여 공격 가능.
+							ㄴ ex )
+								ㄴ 입력값이 서버에서 그대로 sql 조건문으로 넘어가는 경우, 입력값에 적당한 sql을 집어넣어 간접적으로
+									db에 명령을 실행하는 등.
+							ㄴ 대응 )
+								ㄴ 입력값을 그 대로 sql에 사용하지 말고, sql에 사용되는 예약문자들 필터링. (큰따옴표, 작은따옴표, 세미콜론 등)
+							ㄴ 현재 대부분의 sql관련 라이브러리, 프레임워크에서 기본적으로 방어해준다함.
+					ㄴ 세션 관련
+						ㄴ 세션 고정 취약점
+							ㄴ 로그인 전 세션을 로그인 후에도 그대로 사용하는 경우,
+								공격자가 사전에 페이지에 접속하여 세션id를 받아두고 기다렸다가
+								다른 유저가 로그인하면 이 세션id를 도용하는 케이스.
+							ㄴ 로그인시마다 새로운 세션id를 발급
+						ㄴ 세션 만료 시간
+							ㄴ 세션 만료 시간이 너무 긴 경우, 로그아웃되지 않은 컴퓨터에서 다른 사용자가 사용할 수 있음.
+							ㄴ 서비스에 따라 적절히 설정.
+						ㄴ 세션 스니핑
+							ㄴ 패킷을 중간에 탈취하여 세션 정보를 알아내는 방법.
+							ㄴ 대응 )
+								ㄴ ssl 적용.
+						ㄴ 세션 id 노출
+							ㄴ 세션 id가 url에 노출되어선 안됨.
+						ㄴ 세션 id 무작위 대입.
+							ㄴ 세션 id가 단순한 경우, 세션 id의 패턴을 분석하여 때려맞추는 식으로 탈취 가능.
+							ㄴ 대응 )
+								ㄴ 세션 id 암호화.
+								ㄴ 길고 랜덤하게.
+								ㄴ 시도 횟수 제한.
+					ㄴ 아이디, 비밀번호 관련
+						ㄴ 유저들이 같은 id, pw를 돌려쓰는 경우가 많기 때문에, 한곳에서 탈취된 id, pw은 해커에게 판매되어
+							다른 계정을 뚫는데 사용된다.
+							ㄴ 보안상 중요한 동작에 '다중 인증'을 걸어 id, pw만으로 동작할 수 없도록.
+								ㄴ '다중 인증' : id, pw 이외에 email OTP나 생체인증 등의 추가적인 인증을 요구하는 것.
+						ㄴ 패스워드 무차별 대입
+							ㄴ 무작위로 무수히 많은 id, pw을 시도하여 탈취하는 방법.
+							ㄴ 대응 )
+								ㄴ 강력한 pw 정책.
+									ㄴ 1234, qwer, 이름, id가 포함 등의 단순한 비밀번호 말고
+										영문, 특수문자 등을 포함시킨 강력한 비번을 설정하도록.
+								ㄴ 로그인 시도 횟수 제한.
+						ㄴ 패스워드가 평문으로 노출되는 곳이 없도록.
+							비번 찾기는 새 비번으로 변경으로 대체.
+						ㄴ 로그인 실패시 메세지 단일화. id, pw 중 어디가 틀렸는지 알려주지 말것.
+					ㄴ 암호화
+						ㄴ 해시 사용시 솔트(salt) 사용 필수.
+							ㄴ 솔트를 사용하지 않을시, 무작위 평문 대입으로 동일한 해시값을 갖는 값을 찾을 수 있다.
+						ㄴ 자체 개발 암호화보단 공인 암호화 알고리즘(3DES, SEED, AES 등) 사용.
+					ㄴ 프런트 로직은 안전하지 않다.
+						프런트 로직에서 암호화, 마스킹 등을 하지 말것. 무조건 백엔드에서 하고 프런트로 전달.
+						ㄴ 프런트로 일단 보안처리가 안된 데이터가 넘어오면 상대적으로 매우 취약해짐.
+					ㄴ 접근 권한 관련
+						ㄴ 접근 권한이 필요한 리소스 접근시, 반드시 권한을 확인하도록.
+						ㄴ 특히, 한 프로세스가 여러 페이지로 구성된 경우 유의.
+					ㄴ 파일 업로드 관련
+						ㄴ 악성 스크립트 업로드
+							ㄴ 악성 스크립트가 있는 파일을 게시판 첨부파일, 이미지 파일 등으로 서버에 업로드시켜 스크립트의 악성 명령들을
+								실행시키는 방식.
+							ㄴ 대응 )
+								ㄴ 파일 업로드시, 확장자 필터링(.jsp, .asp, .php, .inc ... )
+									ㄴ 필터링시, 확장자명을 대소문자 구분없이 처리해야함. .Jsp, .jSp 등으로 우회 방지.
+					ㄴ 파일 다운로드 관련
+						ㄴ 파일 다운 로직에서, 다운받을 파일 경로까지 입력 가능한 경우, 경로를 조작하여 서버의 중요한 파일을 다운받을 수 있는 경우.
+					ㄴ 프론트로 넘어갔던 값을 다시 받아와 재사용하는 경우, 변조의 위험이 있다.
+					ㄴ 보안상 중요한 프로세스인 경우, 2중 보안 장치 또는 인증 재확인을 추가하여 강화 가능.
+						ㄴ 전화번호 인증 추가 또는 비번 재확인 등.
+					ㄴ 관리자 페이지는 내부에서만 접근 가능하도록.
+						ㄴ ip제한 등.
 
+				</pre>
+				ㄴ 당연히, 무조건 엄격하게 적용해야함은 아님.
+					보안이 강할수록 유저 편의성과 trade off인 경우가 있고, 서비스를 고려하여 적절히 결정 필요.
+
+			</pre>
+
+			ㅡ 프로그램에서 개인정보 암호화
+				ㄴ 무슨 개인정보보호법에 의거하여,
+					ㄴ 유저의 개인정보는 db저장시 암호화하여 저장해야 한다함.
+						주민번호, 바이오정보, 비밀번호, 계좌번호, 주민번호, 여권번호, 카드번호, 운전면허번호 등
+					ㄴ 비번은 일방향 암호화 해야한다함.
+				ㄴ 암호화하여 저장하므로 db에 대한 like검색, 정렬 등은 기본적으로는 불가. 편법사용 필요?
 		</pre>
 
 		인코딩<button>펼치기</button>
@@ -17310,6 +19253,20 @@
 							}
 						}
 					}
+			ㅡ Base64
+				ㄴ 바이너리와 텍스트 사이의 인코딩 방식.
+					즉, 0, 1로 이루어진 이진 데이터를 문자기호로 인코딩 하는 것.
+				ㄴ 이진 데이터를 6 bit씩 잘라서 문자와 매핑시켜 인코딩함.
+					ㄴ 6bit로 표현 가능한 가지수가 64개. 하여 base64.
+				ㄴ ex )
+					이진데이터가 다음과 같을때,
+					0	1	0	0	1	1	0	1	0	1	1	0	0	0	0	1	0	1	1	0	1	1	1	0
+					6 bit씩 묶으면,
+					010011	010110	000101	101110
+					이를 base64의 문자와 매핑하여 인코딩하면
+					TWFu
+					즉, 이진데이터가 'TWFu'라는 문자로 인코딩된다.
+				ㄴ 인코딩표 참조 : https://en.wikipedia.org/wiki/Base64
 
 		</pre>
 
@@ -17417,8 +19374,26 @@
 					ㄴ 무식하게 풀기 )
 						ㄴ 경우를 일일이 나열하면서 답을 찾는 방식. '완전탐색' 이라고도 불림.
 						ㄴ 가장 단순한 해결책으로 컴퓨터의 속도가 빠르다는 것으로 문제를 푸는 것.
-					ㄴ 재귀 호출 )
-						ㄴ
+						ㄴ 재귀 호출 )
+							ㄴ 기본 내용은 아는 그 재귀함수.
+							ㄴ 내용에 더이상 쪼개지지 않는 최소 단위 작업 존재. (기저 사례, base case)
+								n = 1인 경우 처리 등.
+							ㄴ 반복문처럼 같은 로직을 반복하는 것이라 볼 수 있다. 이를 자기 자신을 호출하는 형태로 수행할뿐.
+								경우에 따라 반복문보다 깔끔한 방식으로 로직 반복하는 코드 작성이 가능.
+							ㄴ 완전 탐색 구현에 효과적.
+							ㄴ 완전탐색이므로 시간복잡도는 가능한 모든 케이스의 최대값.
+						ㄴ 최적화 문제에서의 완전탐색 )
+							ㄴ 최적화 문제란
+								ㄴ 답이 하나가 아닌 여러개이고, 그 중 특정 기준에 따라 가장 '좋은' 답을 찾는 문제를 말함.
+							ㄴ 완전탐색으로 최적화 문제를 풀 수있다. 모든 케이스를 확인하여 가장 '좋은' 것을 선택하면 되기 때문.
+								물론, 시간복잡도는 따져보아야함.
+						ㄴ 자주 나오는 패턴
+							ㄴ 다음은 코딩 문제에서 완전탐색과 관련하여 자주 나오는 패턴이다.
+								문제의 직접적 해결책은 아니더라도 부분문제로서도 자주 나온다 한다.
+							ㄴ 모든 순열 만들기.
+								ㄴ 주어진 원소를 가지고 가능한 모든 순열을 생성하여 풀 수 있는 문제.
+							ㄴ 모든 조합 만들기
+								ㄴ 주어진 원소를 가지고 서로 다른 모든 조합을 생성하여 풀 수 있는 문제.
 					ㄴ 분할 정복 )
 						ㄴ
 
@@ -18026,8 +20001,10 @@
 				ㅡ 임의의 길이의 데이터를 고정된 길이의 데이터로 매핑하는 함수.
 				ㅡ 해시 함수에 의해 반환된 값을 '해시값', '해시', '해시코드' 등으로 부른다.
 				ㅡ 해시값은 '해시 테이블'이라는 고정된 크기의 테이블을 인덱싱하는데 사용된다.
-					이렇게 해시함수를 사용하는 것을 '해싱', 'scatter storage addressing' 라고 부른다.
+					이렇게 해시테이블 인덱싱에 해시함수를 사용하는 것을 '해싱', 'scatter storage addressing' 라고 부른다.
 				ㅡ 데이터 저장과 검색에 쓰인다. 검색시 거의 상수 시간 안에 검색이 가능하다.
+				ㅡ 실제 데이터의 크기보다 약간 큰 정도의 저장공간을 필요로한다.
+				ㅡ ??? 해싱은 정렬되거나 정렬되지 않은 리스트나 구조화된 트리에 대한 상수 접근을 가능케하는 저장소 공간 효율적인 데이터 접근 형태이다.
 				ㅡ ??? ~~~
 				ㅡ 해시함수는 checksum, check digit, fingerprint, lossy compression, randomization,
 					error-correcting code, cipher 등과 관련이 깊다.
@@ -18187,8 +20164,131 @@
 				ㄴ 앱, 웹을 개발하는데 사용되는 주요한 여러 기능들(로그인처리, 메세지, 알림, 데이터베이스 등)을 손쉽게 구현할 수 있도록
 					도와주는 도구들이 있는 플랫폼..? 툴 박스 같은것..?
 			ㅡ FCM ( Firebase Cloud Message)
-				ㄴ
+				ㄴ 크로스 플랫폼(iOS, android, 웹, 등)간 메세지 전송을 가능하게 해주는 솔루션.
+				ㄴ 아키텍쳐?
+					ㄴ firebase 콘솔, trusted environment(어플의 서버 등)
+						ㄴ 메세지 전송 요청을 하는 곳.
+					ㄴ firebase 서버
+						ㄴ 받은 메세지 요청을 firebase 내부에서 처리하는 곳.
+					ㄴ platform-level 메세지 transport
+						ㄴ firebase 서버에서 처리 후, APN, ATL, 웹 푸쉬 프로토콜 등을 통하여 푸쉬 전송.
+					ㄴ 클라이언트(안드로이드 앱, ios 앱, 웹 등)
+						ㄴ 클라이언트단의 FCM SDK가 푸쉬를 받음. 어플 로직에 따라 처리.
+				ㄴ 흐름
+					ㄴ 클라이언트가 메세지를 수신할 수 있도록 FCM에 등록하고, 클라이언트를 유일하게 식별하는 등록토큰 발급.
+					ㄴ FCM 콘솔/신뢰할 수 있는 환경(웹 서버 등)에서 대상을 타겟팅하여 메세지 작성, 전송.
+						ㄴ firebase admin SDK, HTTP 프로토콜, XMPP 프로토콜 등 이용. (XMPP는 기기->서버 방향으로 메세지 보낼때 사용)
+					ㄴ 메세지가 FCM 서버로 전달.
+					ㄴ FCM 서버가 메세지의 데이터를 보고 처리. 플랫폼별 전송 레이어로 메세지 전달.
+					ㄴ 플랫폼별 전송 레이러를 통해 메세지가 기기에 전달.
+				ㄴ 서버 환경에서 메세지 작성
+					ㄴ 인증
+						ㄴ 서버 환경에서 FCM으로의 메세지 전송 요청은 '인증'이 필요.
+						ㄴ 방식
+							ㄴ 구글 서비스 내의 환경?(Compute Engine, Google Kubernetes Engine, App Engine, Cloud Function 등)에서
+								인증하려는 경우
+								ㄴ ??? ADC (어플리케이션 기본 사용자 인증) 사용?
+							ㄴ 구글 서비스 환경 이외의 환경인 경우
+								ㄴ '서비스 계정' 키 파일 필요
+									ㄴ firebase console에서 '서비스 계정'의 비공개 키 생성으로 확보. 이 키파일의 데이터로 인증을 하게됨.
+								ㄴ Firebase admin SDK 사용하는 경우
+									ㄴ 키 파일 저장 후, 파일 경로를 'GOOGLE_APPLICATION_CREDENTIALS' 환경변수에 저장.
+										ㄴ ex ) in linux
+											export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"
+									ㄴ SDK의 인증함수 실행시, 이 환경변수의 경로에서 키 파일을 찾아 인증 진행.
+										ㄴ ex ) in python...
+											(*firebase admin SDK*).initialize_app()
+								ㄴ SDK를 사용하지 않는 경우
+									ㄴ FCM http v1 API 사용하는 경우
+										ㄴ 각 언어들의 '구글 인증 라이브러리'를 사용하여 엑세스 토큰을 발급받아 reqeust header에 설정해야함.
+											ㄴ 구글 인증 라이브러리 : https://github.com/googleapis?q=auth
+										ㄴ ex )	https://github.com/googleapis/google-auth-library-python 라이브러리 사용하는 경우..
+											credentials = service_account.Credentials.from_service_account_file(
+												'(*service 계정 키파일 경로*)', scopes=(*인증 scope?*))
+											request = google.auth.transport.requests.Request()
+											credentials.refresh(request)
+											token = credentials.token
+											ㄴ from_service_account_file()에 명시적으로 키파일 경로를 넘겨야함.
+											ㄴ '인증 scope'에는 FCM을 사용하려는 경우
+												'https://www.googleapis.com/auth/firebase.messaging' 입력.
+										ㄴ 위 토큰값을 request header에 다음과 같이 추가
+											ex )
+												headers = {
+												  'Authorization': 'Bearer ' + "(* 토큰 *)",
+												  'Content-Type': 'application/json; UTF-8',
+												}
+									ㄴ 기존 http 사용하는 경우
+										ㄴ ~~~
+					ㄴ 작성
+						ㄴ Firebase Admin SDK 사용
+							ㄴ ~~~
+						ㄴ FCM http v1 API 사용
+							ㄴ 특정 하나의 기기 전송
+								ㄴ requet 형식 ex )
+									POST https://fcm.googleapis.com/v1/projects/myproject-b5ae1/messages:send // HTTP/1.1
 
+									Content-Type: application/json
+									Authorization: Bearer ya29.ElqKBGN2Ri_Uz...HnS_uNreA
+
+									{
+									   "message":{
+										  "token":"bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
+										  "notification":{
+											"body":"This is an FCM notification message!",
+											"title":"FCM Message"
+										  }
+									   }
+									}
+								ㄴ body는 적절히 dump 필요. ex ) python의 json.dumps( { ~~~ } ) ???
+							ㄴ 여러 기기 전송
+								ㄴ request 형시 ㄱex )
+									--subrequest_boundary
+									Content-Type: application/http
+									Content-Transfer-Encoding: binary
+
+									POST /v1/projects/myproject-b5ae1/messages:send
+									Content-Type: application/json
+									accept: application/json
+
+									{
+									  "message":{
+										 "token":"bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
+										 "notification":{
+										   "title":"FCM Message",
+										   "body":"This is an FCM notification message!"
+										 }
+									  }
+									}
+
+									...
+
+									--subrequest_boundary
+									Content-Type: application/http
+									Content-Transfer-Encoding: binary
+
+									POST /v1/projects/myproject-b5ae1/messages:send
+									Content-Type: application/json
+									accept: application/json
+
+									{
+									  "message":{
+										 "token":"cR1rjyj4_Kc:APA91bGusqbypSuMdsh7jSNrW4nzsM...",
+										 "notification":{
+										   "title":"FCM Message",
+										   "body":"This is an FCM notification message!"
+										 }
+									  }
+									}
+									--subrequest_boundary--
+						ㄴ 기존 http 방식 사용
+							ㄴ ~~~
+					ㄴ upstream
+						ㄴ ~~~
+					ㄴ topic
+						ㄴ ~~~
+					ㄴ ~~~
+				ㄴ 클라이언트
+				ㄴ
 		</pre>
 
 		오픈 api<button>펼치기</button>
@@ -18204,6 +20304,9 @@
 					ㄴ 리소스 유형별로 가능한 작업이 다르다.
 				ㅡ part, fields
 					ㄴ api 요청시, 'part', 'fields' 파라미터를 추가하여, api에서 반환하는 데이터에서 일부만을 받을 수 있다.
+                        api의 결과로 반환받을 여러 데이터들이 있는데, 'part'가 이들의 상위 그룹 역할이고, 'fields'가 각 'part'의
+                        하위 요소 취급이다. ex) part=snippet 하위에 fields=title,position 등.
+                        각 api 요청에 이 part, fields 매개변수를 넘겨, 딱 필요한 데이터들만 받을 수 있도록 하는 것.
 						ㄴ https://www.googleapis.com/youtube/v3/search?key=(*api키*)&maxResults=10&q=동화약품
 							위와 같은 api요청에 쿼리파라미터로 'part', 'fields'를 추가하는 것.
 						ㄴ 각 api요청마나 가능한 'part'들 존재. 문서 참고.
@@ -18215,6 +20318,7 @@
 						<pre>
 							ㄴ https://www.googleapis.com/youtube/v3/search?key=AIzaSyByUMQzcO6cH_OLQ6iukmS4bTTWHFatPY8&part=id,snippet&maxResults=10&q=%EB%8F%99%ED%99%94%EC%95%BD%ED%92%88%20000020&type=video
 								위와 같이 요청시, ('part'파라미터만 지정) 아래와 같이 결과.
+                                id, snippet 'part'에 해당하는 모든 데이터 반환.
 							{
 							  "kind": "youtube#searchListResponse",
 							  "etag": "jqqvVuUsOjLEbnAoS29pl3s-uYQ",
@@ -18264,7 +20368,8 @@
 							}
 
 							ㄴ https://www.googleapis.com/youtube/v3/search?key=AIzaSyByUMQzcO6cH_OLQ6iukmS4bTTWHFatPY8&part=id,snippet&maxResults=10&q=%EB%8F%99%ED%99%94%EC%95%BD%ED%92%88%20000020&type=video&fields=kind,etag,nextPageToken,regionCode,pageInfo,items(kind,etag,id(videoId),snippet(publishedAt,title,thumbnails(default(url)),channelTitle))
-								위와 같이 요청시, ('fields'파라미터 추가) 아래와 같이 결과
+								위와 같이 요청시, ('fields'파라미터 추가) 아래와 같이 결과.
+                                id 'part'의 'videoId' field만, snippet 'part'의 publishedAt,title,thumbnails.. 등등 field만 반환.
 							{
 							  "kind": "youtube#searchListResponse",
 							  "etag": "9g9dM56dyGW-Lf8NFbqCJZVQL2E",
@@ -18317,6 +20422,7 @@
 				</pre>
 
 			</pre>
+
 			애플 <button>펼치기</button>
 			<pre>
 				로그인 연동<button>펼치기</button>
@@ -18369,6 +20475,18 @@
                     ㄴ
 
                 </pre>
+
+            </pre>
+
+            ㄴ 카카오<button>more</button>
+            <pre>
+                ㄴ ~~~
+                ㄴ 카카오 채널
+                    ㄴ ??? 카카오 개발페이지에서 해당 앱을 '비즈니스' 앱으로 등록 후, 카카오톡 채널 추가?
+                        '카카오 비즈니스'에서 동일한 정보로 등록된 비즈니스 채널과 연결 가능
+                    ㄴ 항상하는 여러 설정들 있고,
+                        rest api에선 다른 기능들 제공하고 주요 기능들(채널 추가, 채팅창 열기 등)은 android, ios, javascript sdk로 제공되는듯.
+
 
             </pre>
 
@@ -18624,6 +20742,10 @@
                         ㄴ 테스트할게 많고 자주 할수록 효과 큼?
                         ㄴ 소프트웨어가 크고 복잡할 수록 수정에 따라 어떤 부분에 영향이 있을지 확인할게 많으므로 효과 큼?
                         ㄴ 개발 시간 증가라는 확실하고 작지 않은 단점이 있으므로 효과를 고려해서 가성비를 따져봐야함?
+                        ㄴ 생각보다 두세번만 테스트해도 일일이 테스트하는 것보다 테스트 코드 작성하는 시간이 더 적게 걸린다?
+                            아주 단순한 로직이 아니면 여러 케이스에 대해 테스트할게 꽤많으므로.
+                            관련된 부분이 많으면 더더욱?
+                            문서화하고 읽고 테스트하는 것도 성가신 일?
                     ㄴ 'Continuous delivery(CD)'와 'continuout testing'에 있어서 필수적이다.
                         ㄴ Continuous delivery란
                             ㄴ 짧은 소프트웨어 싸이클로 소프트웨어가 항상 안정적으로 릴리즈 가능하도록 하는 소프트웨어 엔지니어링 방식.
@@ -18921,7 +21043,101 @@
                     ㄴ 일단 기존 domain name server로 수정해줌.
         </pre>
 
+        AI<button>more</button>
+        <pre>
+            ㄴ ??? 인간의 지능으로 하는 것들(지각, 추론, 학습 등)을 컴퓨터도 할 수 있도록 하는 것?
+            ㄴ ~~~
+            ㄴ machine learning (=머신러닝, 기계학습)
+                ㄴ
 
+            ㄴ 무제 )
+                ㄴ ChatGPT<button>more</button>
+                <pre>
+                    ㄴ 무제 )
+                        ㄴ 컴퓨터, 기술적인 지식, 자주하는 시행착오 등은 그냥 물어보면 더 잘 서칭, 효과적.
+                            여러 조건들이 섞인 로직을 구현하는건 잘 알아듣게 정교한? 상세한 명령 필요? 그리 간단하진 않은 것 같다.
+                            전체 프로그램을 요구사항 분석, 명세 추출 등은 당연히 안되고, 설계도 아직까지는 안되는 듯 하다.
+                            ㄴ 그리고 영어가 확실히 나은 듯 하다. 언어 자료들을 학습하여 만들기 때문에 자료가 많은 영어가 더 성능이 좋다함.
+                        ㄴ 다음 단어 예측
+                        ㄴ masked 단어 예측
+                        ㄴ 문장의 정확한 의미를 파악하지 못하여 예측이 틀리는 경우?
+
+
+                </pre>
+                ㄴ 하위 분야 : 자연어 처리, 머신러닝, 등등.
+                ㄴ 머신러닝 하위에 딥러닝
+                ㄴ 김성훈 머신러닝 유튭 강의 정리<button>more</button>
+                <pre>
+                    ㄴ explicit programming : 케이스들을 일일히 명시적으로 프로그래밍적으로 처리하는 방식?
+                        ㄴ ex ) 이런 케이스엔 저렇게 동작하고, 이런 패턴이면 스팸으로 처리하고, 등.
+                        ㄴ 케이스가 너무 많은 문제.
+                        ㄴ 이런 케이스를 일일히 명시하여 처리하지 말고 프로그램이 알아서 학습하여 처리하도록 하는게 머신러닝? 처음 생각.
+                    ㄴ supervised learning : 이미 정제된 데이터들로 학습하는 머신러닝 방식.
+                        ㄴ ex ) 고양이 사진에 'cat' label, 강아지사진에 'dog' label들을 붙여 데이터를 주어 학습시킴.
+                        ㄴ
+                            ㄴ 일정 범위를 예측(regression), 이지선다 분류(binary classification), 여러 케이스 분류(multi-label classification)
+                    ㄴ unsupervised learning : 사전 정제 없이, 그냥 raw 데이터로 머신러닝하는 방식?
+                    ㄴ 머신러닝 대상 문제? : 이메일 스팸, 이미지 분류, 점수 예측
+                    ㄴ TensorFlow
+                        ㄴ
+
+                </pre>
+                ㄴ 강인공지능 : 실제 사람처럼 생각하는 지능을 가진 인공지능. 사람과 똑같이 생각하므로 일반적인 경우에 모두 사용할 수 있다 하여
+                                일반인공지능 이라고도 한다?
+                ㄴ 약인공지능 : 특정한 조건, 환경, 기능에 대해서만 동작하는 인공지능.
+                ㄴ 신경망, neural network
+                    ㄴ 여러 뉴런으로부터 입력값을 받음
+                    ㄴ 입력값에 각각의 '가중치'를 곱.
+                    ㄴ 그 결과들을 합 (결합함수?)
+                    ㄴ 그 합에 대하여 '임계값' 기준 어떤 판단을함. 0인지 1인지. (활성화함수?)
+                        ㄴ 결합함수 결과에 대해 임계값보다 큰지 작은지 판단해야 하는데, 임계값도 계속 변화하므로 수식이 복잡하다함.
+                            하여 (*결합함수 합*) > (*임계값*)에서 임계값을 좌변으로 넘겨 (*임계값*) + (*결합함수 합*) > 0 과 같이 0 기준으로
+                            크면 1, 작으면 0 이런식으로 간단하게 만들고,
+                            여러 뉴런으로부터 입력값 받아 가중치를 곱할 때, 하나의 입력을 추가하고 이를 (*임계값*)으로 취급. (이의 입력값은 1, 가중치는 계속변동)
+                            하여 이 추가된 입력값포함 입력값들을 가중치 곱하여 더하면 (*임계값*)+(*결합함수 합*)이 되도록.
+                    ㄴ 판단한 결과 값(0 또는 1)과 이 결과값에 대한 예측치와의 차이값으로 가중치 조절.
+                        ㄴ 차이값에 '학습률' 곱. (가중치 조절 과정에서 그냥 차이값 사용시 변동성이 커, 완화 위한 임의의 값)
+                        ㄴ 이 값을 기존 입력값에 각각 곱.
+                        ㄴ 이 값을 기존 가중치에 각각 합한 것이 조정된 가중치.
+                    ㄴ 이를 레이어 거치며 반복
+                    ㄴ 최종 결과 도출.
+                    ㄴ 정확한 결과를 도출하는 가중치와 임계값을 찾아내는 것이 관건. 이 과정을 학습이라함?
+                        이를 찾은게 모델이라함?
+                    ㄴ 이 과정이 기본적인 머신러닝 방식?
+        </pre>
+
+        봇<button>more</button>
+        <pre>
+            ㄴ ~~~
+            ㄴ 무제 )
+                ㄴ 스크래핑 프로그램같이 컴퓨터상에서 사람인 것처럼 동작하는 프로그램?
+                ㄴ 좋은? 기능을 하는 봇이 있고 악용되는 봇이 있다.
+                    ㄴ 전자의 예 ) 검색엔진의 크롤링 봇?
+                    ㄴ 후자의 예 ) 민감한 데이터 스크래핑, 디도스 공격용 봇, 계정 탈취 등.
+                ㄴ 봇 탐지 )
+                    ㄴ 해킹과 보안처럼 창고 방패마냥, 봇을 동작시키려는 사람들과 막으려는 사람들이 갖은 방법을 사용.
+                    ㄴ 가장 기본적인 봇 동작은 selenium, 매크로 등으로 동작하는 것들?
+                    ㄴ 가장 기본적인 봇 탐지 & 방지는 봇 위험이 많다 판단되는 특정 ip영역대를 차단하는 것?
+                    ㄴ ip 평판 이용 )
+                        ㄴ 알려진 vpn 공급자에 속한 ip 등은 평판이 나쁨.
+                    ㄴ http request header확인.
+                    ㄴ tls 지문???
+                    ㄴ ~~~
+                    ㄴ 머신러닝을 통해 일반유저의 패턴을 학습하여 봇 탐지?
+
+                ㄴ 매크로를 만들법한 프로그램?
+                    ㄴ autohotkey
+                    ㄴ autoit
+                    ㄴ PyAutoGui
+
+                ㄴ google의 reCAPTCHA v3
+                    ㄴ 구글의 봇탐지 프로그램.
+                    ㄴ js단에서 클라이언트가 봇인지 아닌지를 판별하는 점수(0~1점. 0은 봇, 1은 사람)를 계산.
+                    ㄴ ??? 판별은 휴리스틱 ai를 이용하여 액션 패턴을 파악한다함?
+                        한 ip에서 너무 많은 요청 등.
+                    ㄴ ??? ai를 이용해 만든 봇으로 파훼는 현재 가능하다 한다.
+
+        </pre>
 
 	</pre>
 
@@ -18929,7 +21145,44 @@
 	<pre>
 		기타<button>더보기</button>
 		<pre>
+            ㅡ 데이터 분석?
+                ㄴ 단계
+                    ㄴ 원시 데이터 수집 : 스크래핑, 사내 서비스 내 자체 수집(로그, 이메일, 구매내역 등)
+                    ㄴ 데이터 정제
+                        ㄴ 오류 데이터(누락, 오타, 중복, 정상 범주를 벗어난 값 등), 데이터 형식 일치
+                        ㄴ 일반적으로 가장 많은 시간 할애. 분석 결과 정확성에 직결.
+                    ㄴ 데이터 분석
+                        ㄴ ??? 사실 기술, 해석, 의사 결정?
+            ㅡ 선점형 멀티테스킹, 협동형 멀티테스킹
+                ㄴ 전자는 인터럽트를 사용하여 프로세스를 중단시키고 다음에 실행될 프로세스를 결정하는 방식.
+                ㄴ 후자는 프로세스가 리소스가 필요치 않을때 '스스로 양보'하도록 만들어진 멀티테스킹 방식.
+            ㅡ coroutine, subroutine
+                ㄴ subroutine
+                    ㄴ 그냥 함수 같은 것. routine이 프로그램이라 하면, 그 하위에서 기능이 나누어져 있는 명령어 조합을 subroutine이라 부름.
+                    ㄴ routine은 여러 subroutine으로 구성된다 할 수 있고, 여러 subroutine들을 실행시킨다.
+                ㄴ coroutine
+                    ㄴ subroutine과 거의 유사하나, subroutine은 한번 실행되면 종료까지 계속 실행되는 반면,
+                        coroutine은 시작부터 종료 전까지 계속 실행을 중지하고 재시작하는 것을 선택할 수 있다.
+                        즉, 중간에 계속 멈췄다 마저 실행되었다를 반복할 수 있는 것.
+                    ㄴ 협동형 멀티테스킹에 사용된다함.
+                    ㄴ 함수에서 yield 등을 반환함으로서 코루틴 함수를 만들 수 있다.
+                        ㄴ ex )
 
+            ㅡ Link
+                ㄴ object file들로 executable file을 만들기 위해 링커는 symbol들에 대한 참조를 결정해야 한다.
+                ㄴ 이를 위해 링커는 symbol table 사용.
+                    ㄴ symbol table
+                        ㄴ 각각의 object file들에서 사용되는 심볼들의 정보를 가지고 있는 테이블.
+                        ㄴ 심볼 정보란 일반적으로 이름, 타입, 크기, 위치 등.
+                ㄴ object file들에서 사용되는 모든 symbol 목록 생성.
+                    각각의 object file안에서 정의되지 않은 symbol들 필터링.
+                    필터링된 심볼들을 다른 object file에서 정의되었는지 확인, 발견시, 심볼이 그 정의를 가리키도록 업데이트?
+                    찾지 못하면 링크프로세스 에러.
+                ㄴ Symbol
+                    ㄴ 소스코드에서 함수명, 변수명 등 프로그램의 요소를 표현하는 것. 이름과 매핑되며 해당하는 정보를 가지고 있다.
+                ㄴ 링크 과정에서의 symbol 결정
+                    ㄴ linker가 파일의 심볼을 보고, 이 심볼이 해당 파일에 정의되어 있는지 확인, 있으면 그 심볼 사용.
+                        없으면, 다른 오브젝트 파일, 라이브러리 등에 정의되어 있는지 확인. 있으면 그
             ㅡ Emulator
                 ㄴ 어떤 컴퓨터 시스템(host라 부른다)이 다른 컴퓨터 시스템(guest라 부른다)처럼 행동할 수 있게 해주는 하드웨어나 소프트웨어를 지칭.
                 ㄴ 일반적으로, 특정 소프트웨어를 실행할 수 있게 해주거나, guest 시스템을 위해 설계된 장치를 사용할 수 있게 해준다.
